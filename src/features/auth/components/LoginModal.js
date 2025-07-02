@@ -14,10 +14,10 @@ const LoginModal = ({ show, handleClose }) => {
     await login({ email, password });
     // Only close the modal if there's no error
     if (!error) {
-      MyToastComponent.successToast('Giriş başarılı!');
+      
       handleClose();
     } else {
-      MyToastComponent.errorToast('Giriş başarısız! Lütfen bilgilerinizi kontrol edin.');
+      
     }
   };
 

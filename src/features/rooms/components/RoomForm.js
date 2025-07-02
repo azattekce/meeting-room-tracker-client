@@ -1,8 +1,8 @@
-// src/features/room/components/RoomCard.js
+// src/features/room/components/RoomForm.js
 import React from 'react';
 import { Card, Button } from 'react-bootstrap';
 
-const RoomCard = ({ room, handleEdit, handleDelete, canEdit = true }) => {
+const RoomForm = ({ room, handleEdit, handleDelete, canEdit = true }) => {
   return (
     <Card className="h-100 shadow-sm">
       <Card.Header className="bg-info text-white">
@@ -29,4 +29,4 @@ const RoomCard = ({ room, handleEdit, handleDelete, canEdit = true }) => {
   );
 };
 
-export default RoomCard;
+export default RoomForm;

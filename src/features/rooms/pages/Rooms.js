@@ -7,7 +7,7 @@ import { Row, Col, Button, Spinner } from 'react-bootstrap';
 import AddModal from '../components/AddModal';
 import EditModal from '../components/EditModal';
 import DeleteModal from '../components/DeleteModal';
-import RoomCard from '../components/RoomCard';
+import RoomForm from '../components/RoomForm';
 import MyToastComponent from '../../common/MyToastComponent';
 
 const Rooms = () => {
@@ -54,7 +54,7 @@ const Rooms = () => {
       <Row xs={1} md={2} lg={3} className="g-4">
         {rooms.map((room) => (
           <Col key={room.room_id}>
-            <RoomCard 
+            <RoomForm 
               room={room} 
               handleEdit={handleEdit} 
               handleDelete={handleDelete}
