@@ -26,19 +26,24 @@ const EditModal = ({ show, handleClose, meeting, rooms, users, onUpdateMeeting }
   
   const handleSubmit = (e) => {
     e.preventDefault();
+    alert("handleSubmit called with formData: " + JSON.stringify(formData, null, 2));
+    
+    // Structure the meeting data from form data
+    const meetingData = {
+      meeting_id: meeting?.meeting_id || meeting?.id, // meeting prop'undan al
+      title: formData.title,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      room_id: parseInt(formData.room_id),
+      date: formData.date,
+      description: formData.description,
+      attendees: formData.attendees || []
+    };
     
     if (validateForm()) {
-      const meetingData = {
-        ...formData,
-        startTime: `${formData.date}T${formData.startTime}`,
-        endTime: `${formData.date}T${formData.endTime}`,
-      };
-      
       // Use the onUpdateMeeting prop function passed from parent
-      if (onUpdateMeeting) {
-        onUpdateMeeting(meetingData);
-      }
-      
+      alert("onUpdateMeeting called with meetingData: " + JSON.stringify(meetingData, null, 2));
+      onUpdateMeeting(parseInt(meetingData.meeting_id), meetingData);
       handleClose();
     }
   };

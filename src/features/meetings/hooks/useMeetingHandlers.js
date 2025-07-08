@@ -11,7 +11,7 @@ export const useMeetingHandlers = () => {
     addMeeting, updateMeeting, deleteMeeting,
     getParticipants, addParticipant,
     loadMeetings,
-    loadRooms, loadUsers
+    loadRooms, loadUsers,loadParticipants
   } = useMeetingsApi();
 
 
@@ -34,8 +34,12 @@ export const useMeetingHandlers = () => {
   const [loading, setLoading] = useState(false);
 
   // Handle form submission for creating a new meeting
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleCreateMeeting = async (e) => {
+    // e parametresi event objesi olmayabilir, bu yüzden kontrol edelim
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
+    
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
@@ -44,17 +48,10 @@ export const useMeetingHandlers = () => {
     }    
     setLoading(true);
     try {
-      // Transform formData to match API expectations
-      const meetingData = {
-        meeting_title: formData.title,
-        description: formData.description,
-        room_id: formData.roomId,
-        start_time: `${formData.date}T${formData.startTime}`,
-        end_time: `${formData.date}T${formData.endTime}`
-      };
-      
+     
       // Create meeting
-      const meetingId = await addMeeting(meetingData);
+      alert("handleCreateMeeting called with formData: " + JSON.stringify(formData, null, 2));
+      const meetingId = await addMeeting(formData);
       
       // Add participants
       await Promise.all(formData.attendees.map(userId =>
@@ -72,7 +69,33 @@ export const useMeetingHandlers = () => {
       loadUsers();
       setToast({ show: true, message: 'Toplantı başarıyla oluşturuldu!', variant: 'success' });
     } catch (error) {
-      setToast({ show: true, message: error.response?.data?.detail || 'Toplantı oluşturulurken hata oluştu!', variant: 'danger' });
+      console.error('Meeting creation error:', error);
+      console.error('Error response data:', error.response?.data);
+      
+      // Backend'den gelen hata mesajını string'e çevir
+      let errorMessage = 'Toplantı oluşturulurken hata oluştu!';
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (errorData.detail) {
+          if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+          } else {
+            errorMessage = errorData.detail;
+          }
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (Array.isArray(errorData)) {
+          errorMessage = errorData.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+        } else {
+          errorMessage = JSON.stringify(errorData);
+        }
+      }
+      
+      setToast({ show: true, message: errorMessage, variant: 'danger' });
     } finally {
       setLoading(false);
     }
@@ -80,36 +103,67 @@ export const useMeetingHandlers = () => {
 
   // Prepare for editing a meeting
   const handleEditMeeting = async (meeting) => {
+    alert("handleEditMeeting called with meeting: " + JSON.stringify(meeting, null, 2));
     setEditingMeetingId(meeting.meeting_id);
     
     try {
       // Get participants for the meeting
-      const participants = await getParticipants(meeting.meeting_id);
+      const participants = await loadParticipants(meeting.meeting_id);
       const participantIds = participants.map(p => p.user_id.toString());
       
       // Update the form with meeting data
       updateFormData({
-        id: meeting.meeting_id,
-        title: meeting.meeting_title,
+        meeting_id: meeting.meeting_id,
+        id: meeting.meeting_id, // Use meeting_id as id
+        title: meeting.title,
         description: meeting.description || '',
-        room_id: meeting.room_id,
-        date: meeting.start_time.split('T')[0], // Extract date part
-        startTime: meeting.start_time.split('T')[1], // Extract start time
-        endTime: meeting.end_time.split('T')[1], // Extract end time
+        room_id: parseInt(meeting.room_id),
+        date: meeting.date, // Extract date part
+        startTime: meeting.starttime, // Extract start time
+        endTime: meeting.endtime, // Extract end time
         attendees: participantIds
         // Note: The date and time fields will be handled by updateFormData
         // using the start_time and end_time from the meeting
       });
-      
+   
       setShowEditModal(true);
-    } catch (error) {
+    } catch (error ) {
+         // Backend'den gelen hata mesajını string'e çevir
+           let errorMessage = 'Toplantı detay çekilirken hata oluştu!';
+          if (error.response?.data) {
+                  const errorData = error.response.data;
+                  
+                  if (typeof errorData === 'string') {
+                    errorMessage = errorData;
+                  } else if (errorData.detail) {
+                    if (Array.isArray(errorData.detail)) {
+                      errorMessage = errorData.detail.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+                    } else {
+                      errorMessage = errorData.detail;
+                    }
+                  } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                  } else if (Array.isArray(errorData)) {
+                    errorMessage = errorData.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+                  } else {
+                    errorMessage = JSON.stringify(errorData);
+                  }
+                }
+
+      alert('Error loading meeting data for edit: ' + errorMessage);
       setToast({ show: true, message: 'Toplantı bilgileri yüklenirken hata oluştu!', variant: 'danger' });
     }
   };
 
   // Handle form submission for updating a meeting
   const handleEditSubmit = async (e) => {
-    e.preventDefault();
+
+    alert("handleEditSubmit called with formData-1: " + JSON.stringify(formData, null, 2));
+    // Aynı kontrolü burada da uygulayın
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
+    
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
@@ -120,16 +174,10 @@ export const useMeetingHandlers = () => {
     setLoading(true);
     try {
       // Transform formData to match API expectations
-      const meetingData = {
-        meeting_title: formData.title,
-        description: formData.description,
-        room_id: formData.room_id,
-        start_time: `${formData.date}T${formData.startTime}`,
-        end_time: `${formData.date}T${formData.endTime}`
-      };
-      
+         
+      alert("handleEditSubmit called with formData-2: " + JSON.stringify(formData, null, 2));
       // Update meeting
-      await updateMeeting(editingMeetingId, meetingData);
+      await updateMeeting(editingMeetingId, formData);
       
       // Get current participants
       const currentParticipants = await getParticipants(editingMeetingId);
@@ -151,7 +199,33 @@ export const useMeetingHandlers = () => {
       setShowEditModal(false);
       setToast({ show: true, message: 'Toplantı güncellendi!', variant: 'success' });
     } catch (error) {
-      setToast({ show: true, message: error.response?.data?.detail || 'Toplantı güncellenirken hata oluştu!', variant: 'danger' });
+      console.error('Meeting update error:', error);
+      console.error('Error response data:', error.response?.data);
+      
+      // Backend'den gelen hata mesajını string'e çevir
+      let errorMessage = 'Toplantı güncellenirken hata oluştu!';
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (errorData.detail) {
+          if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+          } else {
+            errorMessage = errorData.detail;
+          }
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (Array.isArray(errorData)) {
+          errorMessage = errorData.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+        } else {
+          errorMessage = JSON.stringify(errorData);
+        }
+      }
+      
+      setToast({ show: true, message: errorMessage, variant: 'danger' });
     } finally {
       setLoading(false);
       setEditingMeetingId(null);
@@ -164,6 +238,9 @@ export const useMeetingHandlers = () => {
     setShowDeleteModal(true);
   };
 
+
+
+
   // Confirm and execute meeting deletion
   const confirmDeleteMeeting = async () => {
     try {
@@ -171,7 +248,31 @@ export const useMeetingHandlers = () => {
       loadMeetings();
       setToast({ show: true, message: 'Toplantı silindi!', variant: 'success' });
     } catch (error) {
-      setToast({ show: true, message: error.response?.data?.detail || 'Toplantı silinirken hata oluştu!', variant: 'danger' });
+      console.error('Meeting deletion error:', error);
+      console.error('Error response data:', error.response?.data);
+      
+      // Backend'den gelen hata mesajını string'e çevir
+      let errorMessage = 'Toplantı silinirken hata oluştu!';
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (errorData.detail) {
+          if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+          } else {
+            errorMessage = errorData.detail;
+          }
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else {
+          errorMessage = JSON.stringify(errorData);
+        }
+      }
+      
+      setToast({ show: true, message: errorMessage, variant: 'danger' });
     } finally {
       setShowDeleteModal(false);
       setMeetingToDelete(null);
@@ -185,7 +286,7 @@ export const useMeetingHandlers = () => {
     toast, loading,
     setShowModal, setShowEditModal, setShowDeleteModal,
     setSelectedMeetingId, setEditingMeetingId, setMeetingToDelete,
-    handleSubmit, handleEditSubmit, handleEditMeeting, handleDeleteMeeting, confirmDeleteMeeting,
+    handleCreateMeeting, handleEditSubmit, handleEditMeeting, handleDeleteMeeting, confirmDeleteMeeting,
     setFormData, setToast,
   };
 };

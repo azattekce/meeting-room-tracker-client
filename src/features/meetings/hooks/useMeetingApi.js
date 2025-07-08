@@ -3,7 +3,10 @@ import {
   getMeetings,
   addMeeting, 
   updateMeeting, 
-  deleteMeeting 
+  deleteMeeting,
+  getParticipants,
+  addParticipant,
+  removeParticipant
 } from '../../../api/meetingService';
 import { getRooms } from '../../../api/roomService';
 import { getUsers } from '../../../api/userService';
@@ -12,6 +15,7 @@ export const useMeetingsApi = () => {
   const [meetings, setMeetings] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
+  const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -46,6 +50,19 @@ export const useMeetingsApi = () => {
     }
   };
 
+  const loadParticipants = async (meetingId) => {
+    try {
+      const res = await getParticipants(meetingId);
+      alert("loadParticipants called with meetingId: " + meetingId);
+      setParticipants(res.data);
+      setError(null);
+      return res.data;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch participants');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     loadMeetings();
     loadRooms();
@@ -56,8 +73,10 @@ export const useMeetingsApi = () => {
     meetings, setMeetings,
     rooms, setRooms,
     users, setUsers,
+    participants, setParticipants,
     loading, error,
-    loadMeetings, loadRooms, loadUsers,
-    addMeeting, updateMeeting, deleteMeeting
+    loadMeetings, loadRooms, loadUsers, loadParticipants,
+    addMeeting, updateMeeting, deleteMeeting,
+    getParticipants, addParticipant
   };
 };

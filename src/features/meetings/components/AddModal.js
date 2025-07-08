@@ -31,11 +31,9 @@ const AddModal = ({ show, handleClose, rooms, users, onAddMeeting }) => {
   
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("handleSubmit called with formData: " + JSON.stringify(formData, null, 2));
    
     if (validateForm()) {
       alert("Form is valid");
-
       const meetingData = {
         ...formData,
         startTime: `${formData.date}T${formData.startTime}`,

@@ -1,6 +1,6 @@
 // src/features/meetings/meetingsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getMeetings, AddMeeting, addParticipant } from '../../api/meetingService';
+import { getMeetings, addMeeting, addParticipant } from '../../api/meetingService';
 import { getRooms } from '../../api/roomService';
 import { getUsers } from '../../api/userService';
 
@@ -20,11 +20,12 @@ export const fetchUsers = createAsyncThunk('meetings/fetchUsers', async () => {
   return res.data;
 });
 
-export const addMeeting = createAsyncThunk(
+export const addMeetingSlice = createAsyncThunk(
   'meetings/addMeeting',
   async ({ meetingData, participants }, { rejectWithValue }) => {
     try {
       // Create the meeting
+      alert('Toplantı oluşturuluyor...');
       const meetingRes = await addMeeting(meetingData);
       const meetingId = meetingRes.data.meeting_id;
       
@@ -83,15 +84,15 @@ const meetingsSlice = createSlice({
       })
       
       // Add meeting
-      .addCase(addMeeting.pending, (state) => {
+      .addCase(addMeetingSlice.pending, (state) => {
         state.loading = true;
       })
-      .addCase(addMeeting.fulfilled, (state, action) => {
+      .addCase(addMeetingSlice.fulfilled, (state, action) => {
         state.meetings = action.payload;
         state.loading = false;
         state.error = null;
       })
-      .addCase(addMeeting.rejected, (state, action) => {
+      .addCase(addMeetingSlice.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
       });
