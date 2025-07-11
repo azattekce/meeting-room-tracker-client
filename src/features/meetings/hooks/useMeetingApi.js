@@ -55,7 +55,7 @@ export const useMeetingsApi = () => {
       const res = await getParticipants(meetingId);
       alert("loadParticipants called with meetingId: " + meetingId);
       setParticipants(res.data);
-      setError(null);
+      setError(null);      
       return res.data;
     } catch (err) {
       setError(err.message || 'Failed to fetch participants');

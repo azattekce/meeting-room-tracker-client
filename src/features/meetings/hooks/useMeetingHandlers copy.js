@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useMeetingForm } from './useMeetingForm';
 import { useMeetingsApi } from './useMeetingApi';
 import { useModals } from './useModals';
-import moment from 'moment';
 
-export const useMeetingHandlers = () => {
+export const useMeetingHandlers_copy= () => {
   
   
   const {
@@ -15,10 +14,12 @@ export const useMeetingHandlers = () => {
     loadRooms, loadUsers,loadParticipants
   } = useMeetingsApi();
 
-  const {formData, setFormData,
+
+  const {
+    formData, setFormData,
     validationErrors, setValidationErrors,
     validateForm, resetForm, updateFormData
-     } = useMeetingForm();
+  } = useMeetingForm();
 
   const {
     showModal, setShowModal,
@@ -33,14 +34,14 @@ export const useMeetingHandlers = () => {
   const [loading, setLoading] = useState(false);
 
   // Handle form submission for creating a new meeting
-  const handleSubmit = async (e) => {
+  const handleCreateMeeting = async (e) => {
     // e parametresi event objesi olmayabilir, bu yüzden kontrol edelim
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
-    }    
+    }
+    
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
-      alert("errors: " + JSON.stringify(errors, null, 2));
       setValidationErrors(errors);
       setToast({ show: true, message: 'Lütfen zorunlu alanları doldurunuz!', variant: 'danger' });
       return;
@@ -49,13 +50,18 @@ export const useMeetingHandlers = () => {
     try {
      
       // Create meeting
-      alert("handleSubmit called with formData: " + JSON.stringify(formData, null, 2));
-     const formDataWithTimes = {
-        ...formData,
-        room_id: parseInt(formData.room_id) // Ensure room_id is an integer
-      };
-      await addMeeting(formDataWithTimes);
-
+      alert("handleCreateMeeting called with formData: " + JSON.stringify(formData, null, 2));
+      const meetingId = await addMeeting(formData);
+      
+      // Add participants
+      await Promise.all(formData.attendees.map(userId =>
+        addParticipant(meetingId, {
+          meeting_id: meetingId,
+          user_id: userId,
+          status: 'invited'
+        })
+      ));
+      
       resetForm();
       setShowModal(false);
       loadMeetings();
@@ -175,7 +181,6 @@ export const useMeetingHandlers = () => {
       
       // Get current participants
       const currentParticipants = await getParticipants(editingMeetingId);
-      alert("Current participants: " + JSON.stringify(currentParticipants, null, 2));
       const currentIds = currentParticipants.map(p => p.user_id.toString());
       const newIds = formData.attendees;
       
@@ -281,7 +286,7 @@ export const useMeetingHandlers = () => {
     toast, loading,
     setShowModal, setShowEditModal, setShowDeleteModal,
     setSelectedMeetingId, setEditingMeetingId, setMeetingToDelete,
-    handleSubmit, handleEditSubmit, handleEditMeeting, handleDeleteMeeting, confirmDeleteMeeting,
+    handleCreateMeeting, handleEditSubmit, handleEditMeeting, handleDeleteMeeting, confirmDeleteMeeting,
     setFormData, setToast,
   };
 };

@@ -8,9 +8,12 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import MeetingItem from '../components/MeetingItem';
 import EditModal from '../components/EditModal';
 import DeleteModal from '../components/DeleteModal';
+import { useEffect } from 'react';
+
 
 const Meetings = () => {
  
+
 
   const {
     meetings, rooms, users,
@@ -23,11 +26,20 @@ const Meetings = () => {
     handleEditMeeting, handleDeleteMeeting, confirmDeleteMeeting,
     handleCreateMeeting, handleUpdateMeeting,
     toast, setToast,
+    formData, setFormData,
+    validationErrors, setValidationErrors,
+    handleSubmit, loading, handleEditSubmit
   } = useMeetingHandlers();
 
 
   const auth = useAuth();
   const isAdmin = 1; // auth.user && auth.user.role_type === 1;
+  
+  useEffect(() => {
+      // auth içindeki yetkileri göstermek veya başka işlemler için kullanılabilir
+      console.log('Auth roles:', auth.getRoles());
+    }, [auth]);
+  
 
   // Find the currently editing meeting to pass to EditModal
   const editingMeeting = meetings.find(meeting => meeting.meeting_id === editingMeetingId);
@@ -81,21 +93,29 @@ const Meetings = () => {
       )}
 
       {/* Modal and Toast Components */}
+      
       <AddModal
-        show={showModal}
-        handleClose={() => setShowModal(false)}
-        rooms={rooms}
-        users={users}
-        onAddMeeting={handleCreateMeeting}
-      />
+       showModal={showModal}
+       setShowModal={setShowModal}
+       formData={formData}
+       users={users}
+       rooms={rooms}
+       validationErrors={validationErrors}
+       setFormData={setFormData}
+       handleSubmit={handleSubmit}
+       loading={loading}
+     />
       
       <EditModal
-        show={showEditModal}
-        handleClose={() => setShowEditModal(false)}
-        meeting={editingMeeting}
-        rooms={rooms}
+        showModal={showEditModal}
+        setShowModal={setShowEditModal}
+        formData={formData}
         users={users}
-        onUpdateMeeting={handleUpdateMeeting}
+        rooms={rooms}
+        validationErrors={validationErrors}
+        setFormData={setFormData}
+       handleSubmit={handleEditSubmit}
+       loading={loading}
       />
       
       <DeleteModal

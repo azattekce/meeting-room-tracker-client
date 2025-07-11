@@ -36,7 +36,8 @@ export const useMeetingForm = (initialData = null) => {
     
     if (!formData.endTime) {
       errors.endTime = 'End time is required';
-    } else if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
+    } else if ( formData.startTime >= formData.endTime) {
+      //alert('formData.startTime: ' + formData.startTime + ' formData.endTime: ' + formData.endTime);
       errors.endTime = 'End time must be after start time';
     }
     
@@ -44,48 +45,20 @@ export const useMeetingForm = (initialData = null) => {
       errors.attendees = 'Please select at least one attendee';
     }
     
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    return errors;
   };
 
   const resetForm = () => setFormData(getInitialFormData());
-
-  const updateFormData = (meeting) => {
-    if (meeting) {
-      const startMoment = moment(meeting.startTime);
-      const endMoment = moment(meeting.endTime);
-      console.log('Updating form data with meeting:', meeting);
-      console.log('Start Moment:', startMoment.format('YYYY-MM-DD HH:mm')); 
-      console.log('End Moment:', endMoment.format('YYYY-MM-DD HH:mm'));
-      console.log('Attendees:', meeting.attendees);
-      console.log('Meeting ID:', meeting.id);
-      console.log('Meeting Title:', meeting.title);
-      console.log('Meeting Description:', meeting.description);
-      console.log('Room ID:', meeting.room_id);
-
-      
-      setFormData({
-        id: meeting.id,
-        title: meeting.title || '',
-        description: meeting.description || '',
-        roomId: meeting.room_id || '',
-        date: startMoment.format('YYYY-MM-DD'),
-        startTime: startMoment.format('HH:mm'),
-        endTime: endMoment.format('HH:mm'),
-        attendees: meeting.attendees ? meeting.attendees.map(a => a.id) : []
-      });
-      
-      setValidationErrors({});
-    }
-  };
-
+ 
   return {
     formData, 
     setFormData,
     validationErrors, 
     setValidationErrors,
     validateForm, 
-    resetForm,
-    updateFormData
+    resetForm
   };
 };
+
+
+
