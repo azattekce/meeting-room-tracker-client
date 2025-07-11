@@ -3,6 +3,7 @@ import { useMeetingForm } from './useMeetingForm';
 import { useMeetingsApi } from './useMeetingApi';
 import { useModals } from './useModals';
 import moment from 'moment';
+import { Alert } from 'react-bootstrap';
 
 export const useMeetingHandlers = () => {
   
@@ -17,7 +18,7 @@ export const useMeetingHandlers = () => {
 
   const {formData, setFormData,
     validationErrors, setValidationErrors,
-    validateForm, resetForm, updateFormData
+    validateForm, resetForm
      } = useMeetingForm();
 
   const {
@@ -96,55 +97,39 @@ export const useMeetingHandlers = () => {
   };
 
   // Prepare for editing a meeting
-  const handleEditMeeting = async (meeting) => {
-    alert("handleEditMeeting called with meeting: " + JSON.stringify(meeting, null, 2));
-    setEditingMeetingId(meeting.meeting_id);
-    
+  const handleEdit = async (meeting) => {
+     
+    setEditingMeetingId(meeting.meeting_id);    
     try {
       // Get participants for the meeting
       const participants = await loadParticipants(meeting.meeting_id);
-      const participantIds = participants.map(p => p.user_id.toString());
-      
-      // Update the form with meeting data
-      updateFormData({
-        meeting_id: meeting.meeting_id,
-        id: meeting.meeting_id, // Use meeting_id as id
-        title: meeting.title,
-        description: meeting.description || '',
-        room_id: parseInt(meeting.room_id),
-        date: meeting.date, // Extract date part
-        startTime: meeting.starttime, // Extract start time
-        endTime: meeting.endtime, // Extract end time
-        attendees: participantIds
-        // Note: The date and time fields will be handled by updateFormData
-        // using the start_time and end_time from the meeting
-      });
-   
+      setFormData({...meeting, attendees: participants.map(p => p.user_id.toString()) }); // Reset formData with meeting details
       setShowEditModal(true);
+      //alert("handleEdit called with formData: " + JSON.stringify(formData, null, 2));
+
     } catch (error ) {
          // Backend'den gelen hata mesajını string'e çevir
-           let errorMessage = 'Toplantı detay çekilirken hata oluştu!';
-          if (error.response?.data) {
-                  const errorData = error.response.data;
-                  
-                  if (typeof errorData === 'string') {
-                    errorMessage = errorData;
-                  } else if (errorData.detail) {
-                    if (Array.isArray(errorData.detail)) {
-                      errorMessage = errorData.detail.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
-                    } else {
-                      errorMessage = errorData.detail;
-                    }
-                  } else if (errorData.message) {
-                    errorMessage = errorData.message;
-                  } else if (Array.isArray(errorData)) {
-                    errorMessage = errorData.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
-                  } else {
-                    errorMessage = JSON.stringify(errorData);
-                  }
-                }
+        let errorMessage = 'Toplantı detay çekilirken hata oluştu!';
+        if (error.response?.data) {
+        const errorData = error.response.data;
 
-      alert('Error loading meeting data for edit: ' + errorMessage);
+        if (typeof errorData === 'string') {
+        errorMessage = errorData;
+        } else if (errorData.detail) {
+        if (Array.isArray(errorData.detail)) {
+        errorMessage = errorData.detail.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+        } else {
+        errorMessage = errorData.detail;
+        }
+        } else if (errorData.message) {
+        errorMessage = errorData.message;
+        } else if (Array.isArray(errorData)) {
+        errorMessage = errorData.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+        } else {
+        errorMessage = JSON.stringify(errorData);
+        }
+        }
+      
       setToast({ show: true, message: 'Toplantı bilgileri yüklenirken hata oluştu!', variant: 'danger' });
     }
   };
@@ -152,7 +137,7 @@ export const useMeetingHandlers = () => {
   // Handle form submission for updating a meeting
   const handleEditSubmit = async (e) => {
 
-    alert("handleEditSubmit called with formData-1: " + JSON.stringify(formData, null, 2));
+    //alert("handleEditSubmit called with formData-1: " + JSON.stringify(formData, null, 2));
     // Aynı kontrolü burada da uygulayın
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
@@ -169,7 +154,7 @@ export const useMeetingHandlers = () => {
     try {
       // Transform formData to match API expectations
          
-      alert("handleEditSubmit called with formData-2: " + JSON.stringify(formData, null, 2));
+      //alert("handleEditSubmit called with formData-2: " + JSON.stringify(formData, null, 2));
       // Update meeting
       await updateMeeting(editingMeetingId, formData);
       
@@ -281,7 +266,7 @@ export const useMeetingHandlers = () => {
     toast, loading,
     setShowModal, setShowEditModal, setShowDeleteModal,
     setSelectedMeetingId, setEditingMeetingId, setMeetingToDelete,
-    handleSubmit, handleEditSubmit, handleEditMeeting, handleDeleteMeeting, confirmDeleteMeeting,
+    handleSubmit, handleEditSubmit, handleEdit, handleDeleteMeeting, confirmDeleteMeeting,
     setFormData, setToast,
   };
 };

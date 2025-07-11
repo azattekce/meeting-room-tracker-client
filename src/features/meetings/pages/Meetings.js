@@ -23,7 +23,7 @@ const Meetings = () => {
     selectedMeetingId, setSelectedMeetingId,
     editingMeetingId, setEditingMeetingId,
     meetingToDelete, setMeetingToDelete,
-    handleEditMeeting, handleDeleteMeeting, confirmDeleteMeeting,
+    handleEdit, handleDeleteMeeting, confirmDeleteMeeting,
     handleCreateMeeting, handleUpdateMeeting,
     toast, setToast,
     formData, setFormData,
@@ -76,7 +76,7 @@ const Meetings = () => {
                       meeting={meeting}
                       room={room}
                       onViewParticipants={setSelectedMeetingId}
-                      onEdit={handleEditMeeting}
+                      onEdit={handleEdit}
                       onDelete={handleDeleteMeeting}
                       isAdmin={isAdmin}
                     />
@@ -107,8 +107,8 @@ const Meetings = () => {
      />
       
       <EditModal
-        showModal={showEditModal}
-        setShowModal={setShowEditModal}
+        showEditModal={showEditModal}
+        setShowEditModal={setShowEditModal}
         formData={formData}
         users={users}
         rooms={rooms}

@@ -36,8 +36,7 @@ export const useMeetingForm = (initialData = null) => {
     
     if (!formData.endTime) {
       errors.endTime = 'End time is required';
-    } else if ( formData.startTime >= formData.endTime) {
-      //alert('formData.startTime: ' + formData.startTime + ' formData.endTime: ' + formData.endTime);
+    } else if (formData.startTime >= formData.endTime) {
       errors.endTime = 'End time must be after start time';
     }
     
@@ -49,7 +48,9 @@ export const useMeetingForm = (initialData = null) => {
   };
 
   const resetForm = () => setFormData(getInitialFormData());
- 
+
+  
+
   return {
     formData, 
     setFormData,

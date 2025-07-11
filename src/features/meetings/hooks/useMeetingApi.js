@@ -16,19 +16,14 @@ export const useMeetingsApi = () => {
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
   const [participants, setParticipants] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+ 
 
   const loadMeetings = async () => {
-    setLoading(true);
     try {
       const res = await getMeetings();
       setMeetings(res.data);
-      setError(null);
     } catch (err) {
-      setError(err.message || 'Failed to fetch meetings');
-    } finally {
-      setLoading(false);
+      console.error(err);
     }
   };
 
@@ -37,28 +32,28 @@ export const useMeetingsApi = () => {
       const res = await getRooms();
       setRooms(res.data);
     } catch (err) {
-      setError(err.message || 'Failed to fetch rooms');
+      console.error(err);
     }
   };
 
   const loadUsers = async () => {
+    //alert("loadUsers called");
     try {
       const res = await getUsers();
       setUsers(res.data);
     } catch (err) {
-      setError(err.message || 'Failed to fetch users');
+      console.error(err);
     }
   };
 
   const loadParticipants = async (meetingId) => {
     try {
       const res = await getParticipants(meetingId);
-      alert("loadParticipants called with meetingId: " + meetingId);
-      setParticipants(res.data);
-      setError(null);      
+      //alert("loadParticipants called with meetingId: " + meetingId);
+      setParticipants(res.data);      
       return res.data;
     } catch (err) {
-      setError(err.message || 'Failed to fetch participants');
+      console.error(err);
       throw err;
     }
   };
@@ -73,8 +68,7 @@ export const useMeetingsApi = () => {
     meetings, setMeetings,
     rooms, setRooms,
     users, setUsers,
-    participants, setParticipants,
-    loading, error,
+    participants, setParticipants,  
     loadMeetings, loadRooms, loadUsers, loadParticipants,
     addMeeting, updateMeeting, deleteMeeting,
     getParticipants, addParticipant

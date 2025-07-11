@@ -1,19 +1,28 @@
 // src/features/meetings/components/ParticipantsList.js
 import React, { useState, useEffect } from 'react';
-import { Card, ListGroup, Spinner } from 'react-bootstrap';
+import { Card, ListGroup, Spinner, Badge } from 'react-bootstrap';
 import axios from 'axios';
+import { getUsers } from '../../../api/userService';
 
 const ParticipantsList = ({ meetingId }) => {
   const [participants, setParticipants] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchParticipants = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8000/meetings/${meetingId}/participants`);
-        setParticipants(response.data);
+        
+        // Participants ve users'ı paralel olarak yükle
+        const [participantsResponse, usersResponse] = await Promise.all([
+          axios.get(`http://localhost:8000/meetings/${meetingId}/participants`),
+          getUsers()
+        ]);        
+        
+        setParticipants(participantsResponse.data);
+        setUsers(usersResponse.data);
       } catch (err) {
         setError('Katılımcılar yüklenirken bir hata oluştu.');
         console.error(err);
@@ -23,7 +32,7 @@ const ParticipantsList = ({ meetingId }) => {
     };
 
     if (meetingId) {
-      fetchParticipants();
+          fetchData();
     }
   }, [meetingId]);
 
@@ -56,23 +65,26 @@ const ParticipantsList = ({ meetingId }) => {
         {participants.length === 0 ? (
           <p className="text-muted">Bu toplantı için katılımcı bulunamadı.</p>
         ) : (
-          <ListGroup>
-            {participants.map((participant) => (
-              <ListGroup.Item 
-                key={participant.id} 
-                className="d-flex justify-content-between align-items-center"
-              >
-                {participant.user_name || participant.user_id} 
-                <span className={`badge bg-${
-                  participant.status === 'accepted' ? 'success' : 
-                  participant.status === 'declined' ? 'danger' : 'warning'
-                }`}>
-                  {participant.status === 'accepted' ? 'Kabul Edildi' : 
-                   participant.status === 'declined' ? 'Reddedildi' : 'Davet Edildi'}
-                </span>
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
+          <div className="participants-list">
+            {participants.map((participant, index) => {
+              // Unique key oluştur - participant.user_id varsa onu kullan, yoksa index kullan
+              const key = participant.user_id ? `participant-${participant.user_id}` : `participant-${index}`;
+              
+              // User bilgisini bul
+              const user = users.find(u => u.user_id === participant.user_id);
+              const userName = user ? `${user.first_name} ${user.last_name}` : `User ${participant.user_id}`;
+              
+              return (
+                <Badge 
+                  key={key} // Unique key prop'u ekle
+                  variant="secondary" 
+                  className="me-1 mb-1"
+                >
+                  {userName}
+                </Badge>
+              );
+            })}
+          </div>
         )}
       </Card.Body>
     </Card>
