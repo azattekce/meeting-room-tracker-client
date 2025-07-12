@@ -40,10 +40,18 @@ const Meetings = () => {
       console.log('Auth roles:', auth.getRoles());
     }, [auth]);
   
+  useEffect(() => {
+  console.log('Meetings data:', meetings);
+  console.log('Rooms data:', rooms);
+  console.log('Users data:', users);
+   console.log('Auth roles:', auth.getRoles());
+    }, [auth, meetings, rooms, users]);
 
   // Find the currently editing meeting to pass to EditModal
   const editingMeeting = meetings.find(meeting => meeting.meeting_id === editingMeetingId);
 
+
+  
   return (
     <Container className="mt-4">
       <Card className="shadow-sm">
@@ -70,6 +78,7 @@ const Meetings = () => {
             <Row xs={1} md={2} lg={3} className="g-4">
               {meetings.map(meeting => {
                 const room = rooms.find(r => r.room_id === meeting.room_id);
+                
                 return (
                   <Col key={meeting.meeting_id}>
                     <MeetingItem
@@ -114,7 +123,7 @@ const Meetings = () => {
         rooms={rooms}
         validationErrors={validationErrors}
         setFormData={setFormData}
-       handleSubmit={handleEditSubmit}
+        handleEditSubmit={handleEditSubmit}
        loading={loading}
       />
       

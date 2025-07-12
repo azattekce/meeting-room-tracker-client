@@ -137,7 +137,6 @@ export const useMeetingHandlers = () => {
   // Handle form submission for updating a meeting
   const handleEditSubmit = async (e) => {
 
-    //alert("handleEditSubmit called with formData-1: " + JSON.stringify(formData, null, 2));
     // Aynı kontrolü burada da uygulayın
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
@@ -153,28 +152,16 @@ export const useMeetingHandlers = () => {
     setLoading(true);
     try {
       // Transform formData to match API expectations
-         
-      //alert("handleEditSubmit called with formData-2: " + JSON.stringify(formData, null, 2));
-      // Update meeting
-      await updateMeeting(editingMeetingId, formData);
-      
-      // Get current participants
-      const currentParticipants = await getParticipants(editingMeetingId);
-      alert("Current participants: " + JSON.stringify(currentParticipants, null, 2));
-      const currentIds = currentParticipants.map(p => p.user_id.toString());
-      const newIds = formData.attendees;
-      
-      // We'd need an API to remove participants
-      // For now, we'll just add the new participants
-      // This might cause duplication if your API doesn't handle it
-      await Promise.all(newIds.map(userId =>
-        addParticipant(editingMeetingId, {
-          meeting_id: editingMeetingId,
-          user_id: userId,
-          status: 'invited'
-        })
-      ));
-      
+            
+      const formDataWithTimes = {
+              ...formData,
+              room_id: parseInt(formData.room_id) // Ensure room_id is an integer
+            };
+
+      await updateMeeting(editingMeetingId, formDataWithTimes);
+
+      resetForm();
+      loadRooms();      
       loadMeetings();
       setShowEditModal(false);
       setToast({ show: true, message: 'Toplantı güncellendi!', variant: 'success' });
@@ -217,9 +204,6 @@ export const useMeetingHandlers = () => {
     setMeetingToDelete(meetingId);
     setShowDeleteModal(true);
   };
-
-
-
 
   // Confirm and execute meeting deletion
   const confirmDeleteMeeting = async () => {

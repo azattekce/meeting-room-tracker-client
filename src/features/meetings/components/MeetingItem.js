@@ -5,11 +5,12 @@ import { formatDate } from '../../../utils/dateUtils';
 const MeetingItem = ({ meeting, room, onViewParticipants, onEdit, onDelete, isAdmin }) => {
   const isPast = new Date(meeting.end_time) < new Date();
   const isActive = new Date(meeting.start_time) <= new Date() && new Date(meeting.end_time) >= new Date();
+   //alert('MeetingItem component loaded: ' + meeting.title);
 
   return (
     <Card className="mb-3 shadow-sm">
       <Card.Header className={`d-flex justify-content-between align-items-center ${isActive ? 'bg-success text-white' : isPast ? 'bg-secondary text-white' : 'bg-primary text-white'}`}>
-        <span>{meeting.meeting_title}</span>
+        <span>{meeting.title}</span>
         {isActive && <Badge bg="warning">Aktif</Badge>}
         {isPast && <Badge bg="dark">Tamamlandı</Badge>}
         {!isActive && !isPast && <Badge bg="info">Planlandı</Badge>}
@@ -17,10 +18,10 @@ const MeetingItem = ({ meeting, room, onViewParticipants, onEdit, onDelete, isAd
       
       <Card.Body>
         <div className="mb-2">
-          <strong>Başlangıç:</strong> {formatDate(meeting.start_time)}
+          <strong>Başlangıç:</strong> {formatDate(meeting.startTime)}
         </div>
         <div className="mb-2">
-          <strong>Bitiş:</strong> {formatDate(meeting.end_time)}
+          <strong>Bitiş:</strong> {formatDate(meeting.endTime)}
         </div>
         <div className="mb-3">
           <strong>Oda:</strong> {room ? room.room_name : 'Belirtilmemiş'}

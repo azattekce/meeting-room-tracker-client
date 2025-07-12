@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 //import Rooms from './components/Rooms';
@@ -10,21 +10,19 @@ import Participants from './components/Participants';
 //import Users from './components/users';
 import DefaultLayout from './layout/DefaultLayout';
 import Users from './features/user/pages/Users';
+
 function App() {
     return (
-        <Router>
-     
+        <BrowserRouter basename="/meeting-room-tracker">
             <DefaultLayout>         
                 <Routes>
                     <Route path="/users" element={<Users />} />
                     <Route path="/rooms" element={<Rooms />} />
                     <Route path="/meetings" element={<Meetings />} />
                     <Route path="/meetings/:id/participants" element={<Participants />} />
-                    </Routes>
+                </Routes>
             </DefaultLayout>
-
-        
-        </Router>
+        </BrowserRouter>
     );
 }
 
