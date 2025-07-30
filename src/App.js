@@ -10,10 +10,11 @@ import Participants from './components/Participants';
 //import Users from './components/users';
 import DefaultLayout from './layout/DefaultLayout';
 import Users from './features/user/pages/Users';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 function App() {
     return (
-        <BrowserRouter basename="/meeting-room-tracker">
+         <Router>
             <DefaultLayout>         
                 <Routes>
                     <Route path="/users" element={<Users />} />
@@ -22,7 +23,7 @@ function App() {
                     <Route path="/meetings/:id/participants" element={<Participants />} />
                 </Routes>
             </DefaultLayout>
-        </BrowserRouter>
+        </Router>
     );
 }
 

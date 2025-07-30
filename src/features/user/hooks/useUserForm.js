@@ -20,7 +20,10 @@ export const useUserForm = () => {
     return errors;
   };
 
-  const resetForm = () => setFormData(getInitialFormData());
+  const resetForm = () => {
+    setFormData(getInitialFormData());
+    alert('Form sıfırlandı');
+  };
 
   return {
     formData, setFormData,
