@@ -37,7 +37,7 @@ const Users = () => {
     return 'Hata oluştu!';
   };
 
-  // Add User form
+  // Add User form - yeni modüler yapı
   const addForm = useUserForm(async (values, { resetForm }) => {
     try {
       await addUser(values);
@@ -47,9 +47,9 @@ const Users = () => {
     } catch (err) {
       showToast(getErrorMessage(err), 'danger');
     }
-  });
+  }); // ikinci parametre boş = add mode
 
-  // Edit User form
+  // Edit User form - yeni modüler yapı
   const editForm = useUserForm(async (values) => {
     try {
       await updateUser(editingUser.user_id, values);
@@ -59,7 +59,7 @@ const Users = () => {
     } catch (err) {
       showToast(getErrorMessage(err), 'danger');
     }
-  }, editingUser || {});
+  }, editingUser || {}); // ikinci parametre editingUser = edit mode
 
   // Delete confirm
   const confirmDelete = async () => {

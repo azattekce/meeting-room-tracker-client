@@ -3,9 +3,18 @@ import React from 'react';
 import { Button, Spinner, Form } from 'react-bootstrap';
 
 const UserForm = ({ formik, roles, loading, submitText = "Kaydet" }) => {
+  // Edit modunu kontrol et
+  const isEditMode = formik.isEditMode;
+  
+  // Şifre alanı hiçbir modda gösterilmez
+  const fieldsToShow = ['username', 'firstname', 'lastname', 'gsm', 'email'];
+
   return (
     <Form onSubmit={formik.handleSubmit}>
-      {['username', 'firstname', 'lastname', 'gsm', 'email'].map(field => (
+      {/* Gizli şifre alanı - kullanıcıya gösterilmez ama form'da bulunur */}
+      <input type="hidden" name="password" value={formik.values.password} />
+      
+      {fieldsToShow.map(field => (
         <Form.Group className="mb-3" key={field}>
           <Form.Control
             type={field === 'email' ? 'email' : 'text'}
@@ -21,6 +30,17 @@ const UserForm = ({ formik, roles, loading, submitText = "Kaydet" }) => {
           </Form.Control.Feedback>
         </Form.Group>
       ))}
+
+      {/* Şifre bilgi mesajı */}
+      <div className="alert alert-info mb-3">
+        <small>
+          <i className="fas fa-info-circle me-2"></i>
+          {isEditMode 
+            ? "Kullanıcının mevcut şifresi korunacaktır."
+            : "Şifre otomatik oluşturulacak ve e-posta adresine gönderilecektir."
+          }
+        </small>
+      </div>
 
       <Form.Group className="mb-3">
         <Form.Select

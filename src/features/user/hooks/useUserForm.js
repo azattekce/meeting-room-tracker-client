@@ -1,41 +1,23 @@
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import { createUserValidationSchema } from './validation/userValidationSchema';
+import { createInitialValues, processFormSubmission, isEditMode } from './utils/userFormUtils';
 
-
- export const useUserForm = (onSubmit, initialData = {}, isEdit = false) => {
+export const useUserForm = (onSubmit, initialData = {}) => {
+  const editMode = isEditMode(initialData);
+  
   const formik = useFormik({
-    initialValues: {
-      username: initialData.username || '',
-      firstname: initialData.firstname || '',
-      lastname: initialData.lastname || '',
-      gsm: initialData.gsm || '',
-      email: initialData.email || '',
-      password: initialData.password || '',
-      role_type: initialData.role_type || '',
-    },
-    validationSchema: Yup.object({
-      username: Yup.string().required('Kullanıcı adı zorunludur'),
-      firstname: Yup.string().required('Ad zorunludur'),
-      lastname: Yup.string().required('Soyad zorunludur'),
-      gsm: Yup.string().required('GSM zorunludur'),
-      email: Yup.string().email('Geçerli e-posta girin').required('E-posta zorunludur'),
-      password: isEdit 
-        ? Yup.string() // Edit modunda şifre opsiyonel
-        : "", // Add modunda şifre zorunlu
-      role_type: Yup.string().required('Yetki seçimi zorunludur'),
-    }),
+    initialValues: createInitialValues(initialData),
+    validationSchema: createUserValidationSchema(editMode),
     onSubmit: (values, formikBag) => {
-      // Edit modunda boş şifre varsa, şifreyi gönderme
-      if (isEdit && !values.password) {
-        const { password, ...valuesWithoutPassword } = values;
-        onSubmit(valuesWithoutPassword, formikBag);
-      } else {
-        onSubmit(values, formikBag);
-      }
+      const processedValues = processFormSubmission(values, editMode);
+      onSubmit(processedValues, formikBag);
     },
     enableReinitialize: true,
   });
 
-  return formik;
+  return {
+    ...formik,
+    isEditMode: editMode,
+  };
 };
 
