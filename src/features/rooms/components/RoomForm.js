@@ -1,53 +1,103 @@
-// src/features/room/components/RoomForm.js
+// src/features/rooms/components/RoomForm.js
 import React from 'react';
-import { Button, Spinner } from 'react-bootstrap';
+import { Button, Spinner, Form } from 'react-bootstrap';
 
-const RoomForm = ({ formData, validationErrors, setFormData, onSubmit, loading }) => {
-  // Defensive programming - formData undefined olması durumunda varsayılan değerler
-  const safeFormData = formData || {};
-  const safeValidationErrors = validationErrors || {};
+const RoomForm = ({ formik, loading, submitText = "Kaydet" }) => {
+  const roomTypes = [
+    'Toplantı Odası',
+    'Konferans Salonu',
+    'Eğitim Odası',
+    'Sunum Odası',
+    'Telefon Odası',
+    'Çalışma Alanı'
+  ];
+
+  // Debug için
+  console.log('RoomForm formik:', formik);
+  console.log('RoomForm formik.values:', formik?.values);
 
   return (
-    <form onSubmit={onSubmit}>
-      {['room_name', 'location', 'capacity'].map(field => (
-        <div className="mb-3" key={field}>
-          <input
-            type={field === 'capacity' ? 'number' : 'text'}
-            className={`form-control ${safeValidationErrors[field] ? 'is-invalid' : ''}`}
-            placeholder={
-              field === 'room_name' ? 'Oda Adı' :
-              field === 'location' ? 'Konum' :
-              field === 'capacity' ? 'Kapasite' :
-              field.charAt(0).toUpperCase() + field.slice(1)
-            }
-            value={safeFormData[field] || ''}
-            onChange={(e) => setFormData({ ...safeFormData, [field]: e.target.value })}
-            min={field === 'capacity' ? '1' : undefined}
-            max={field === 'capacity' ? '1000' : undefined}
-          />
-          {/* {validationErrors[field] && <div className="invalid-feedback">{validationErrors[field]}</div>} */}
-          {safeValidationErrors[field] && <div className="invalid-feedback">{safeValidationErrors[field]}</div>}
-        </div>
-      ))}
+    <Form onSubmit={formik?.handleSubmit}>
+      {/* Room Name */}
+      <Form.Group className="mb-3">
+        <Form.Control
+          type="text"
+          placeholder="Oda Adı"
+          name="room_name"
+          value={formik.values.room_name || ''}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          isInvalid={formik.touched.room_name && formik.errors.room_name}
+        />
+        <Form.Control.Feedback type="invalid">
+          {formik.errors.room_name}
+        </Form.Control.Feedback>
+      </Form.Group>
 
-      <div className="mb-3">
-        <select
-          className={`form-control ${safeValidationErrors.room_type ? 'is-invalid' : ''}`}
-          value={safeFormData.room_type || ''}
-          onChange={(e) => setFormData({ ...safeFormData, room_type: e.target.value })}
+      {/* Location */}
+      <Form.Group className="mb-3">
+        <Form.Control
+          type="text"
+          placeholder="Konum"
+          name="location"
+          value={formik.values.location || ''}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          isInvalid={formik.touched.location && formik.errors.location}
+        />
+        <Form.Control.Feedback type="invalid">
+          {formik.errors.location}
+        </Form.Control.Feedback>
+      </Form.Group>
+
+      {/* Capacity */}
+      <Form.Group className="mb-3">
+        <Form.Control
+          type="number"
+          placeholder="Kapasite"
+          name="capacity"
+          value={formik.values.capacity || ''}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          isInvalid={formik.touched.capacity && formik.errors.capacity}
+          min="1"
+          max="1000"
+        />
+        <Form.Control.Feedback type="invalid">
+          {formik.errors.capacity}
+        </Form.Control.Feedback>
+      </Form.Group>
+
+      {/* Room Type */}
+      <Form.Group className="mb-3">
+        <Form.Select
+          name="room_type"
+          value={formik.values.room_type || ''}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          isInvalid={formik.touched.room_type && formik.errors.room_type}
         >
           <option value="">Oda Tipi Seçiniz</option>
-          <option value="Toplantı Odası">Toplantı Odası</option>
-          <option value="Konferans Salonu">Konferans Salonu</option>
-          <option value="Eğitim Odası">Eğitim Odası</option>
-          <option value="Sunum Odası">Sunum Odası</option>
-          <option value="Telefon Odası">Telefon Odası</option>
-          <option value="Çalışma Alanı">Çalışma Alanı</option>
-        </select>
-        {safeValidationErrors.room_type && <div className="invalid-feedback">{safeValidationErrors.room_type}</div>}
-      </div>
+          {roomTypes.map(type => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </Form.Select>
+        <Form.Control.Feedback type="invalid">
+          {formik.errors.room_type}
+        </Form.Control.Feedback>
+      </Form.Group>
 
-    </form>
+      <Button type="submit" variant="primary" disabled={loading} className="w-100">
+        {loading ? (
+          <>
+            <Spinner size="sm" className="me-2" animation="border" />
+            {submitText === "Kaydet" ? "Kaydediliyor..." : "Güncelleniyor..."}
+          </>
+        ) : (
+          submitText
+        )}
+      </Button>
+    </Form>
   );
 };
 

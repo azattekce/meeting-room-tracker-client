@@ -24,7 +24,11 @@ const Users = () => {
     showDeleteModal, setShowDeleteModal,
     editingUser, setEditingUser,
     userToDelete, setUserToDelete,
-    toast, setToast, showToast
+    showToast,
+    toastMessage,
+    toastVariant,
+    closeToast,
+    showToastFunction
   } = useUserUI();
 
   // Hata mesajını güvenli şekilde string'e çeviren fonksiyon
@@ -41,11 +45,11 @@ const Users = () => {
   const addForm = useUserForm(async (values, { resetForm }) => {
     try {
       await addUser(values);
-      showToast('Kullanıcı başarıyla eklendi!', 'success');
+      showToastFunction('Kullanıcı başarıyla eklendi!', 'success');
       resetForm();
       setShowModal(false);
     } catch (err) {
-      showToast(getErrorMessage(err), 'danger');
+      showToastFunction(getErrorMessage(err), 'danger');
     }
   }); // ikinci parametre boş = add mode
 
@@ -53,11 +57,11 @@ const Users = () => {
   const editForm = useUserForm(async (values) => {
     try {
       await updateUser(editingUser.user_id, values);
-      showToast('Kullanıcı güncellendi!', 'success');
+      showToastFunction('Kullanıcı güncellendi!', 'success');
       setShowEditModal(false);
       setEditingUser(null);
     } catch (err) {
-      showToast(getErrorMessage(err), 'danger');
+      showToastFunction(getErrorMessage(err), 'danger');
     }
   }, editingUser || {}); // ikinci parametre editingUser = edit mode
 
@@ -65,9 +69,9 @@ const Users = () => {
   const confirmDelete = async () => {
     try {
       await deleteUser(userToDelete);
-      showToast('Kullanıcı silindi!', 'success');
+      showToastFunction('Kullanıcı silindi!', 'success');
     } catch (err) {
-      showToast(getErrorMessage(err), 'danger');
+      showToastFunction(getErrorMessage(err), 'danger');
     } finally {
       setShowDeleteModal(false);
       setUserToDelete(null);
@@ -88,7 +92,12 @@ const Users = () => {
       </div>
       
       {/* Toast */}
-      <MyToastComponent toast={toast} setToast={setToast} />
+      <MyToastComponent
+        show={showToast}
+        onClose={closeToast}
+        message={toastMessage}
+        variant={toastVariant}
+      />
 
       {/* Add Modal */}
       <AddModal

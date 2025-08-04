@@ -1,11 +1,10 @@
 import { useState } from 'react';
 
-export const useUserUI = () => {
-  const [showModal, setShowModal] = useState(false);
+export const useRoomUI = () => {
+  const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [userToDelete, setUserToDelete] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
   
   // Toast state - yeni yapı
   const [isToastVisible, setIsToastVisible] = useState(false);
@@ -34,12 +33,16 @@ export const useUserUI = () => {
     setToast({ show: false, message: '', variant: 'success' });
   };
 
+  const setShowDeleteModalWithItem = (show, item = null) => {
+    setShowDeleteModal(show);
+    setSelectedItem(item);
+  };
+
   return {
-    showModal, setShowModal,
+    showAddModal, setShowAddModal,
     showEditModal, setShowEditModal,
-    showDeleteModal, setShowDeleteModal,
-    editingUser, setEditingUser,
-    userToDelete, setUserToDelete,
+    showDeleteModal, setShowDeleteModal: setShowDeleteModalWithItem,
+    selectedItem, setSelectedItem,
     
     // Yeni yapı
     showToast: isToastVisible,
@@ -52,5 +55,3 @@ export const useUserUI = () => {
     toast, setToast
   };
 };
-
- 

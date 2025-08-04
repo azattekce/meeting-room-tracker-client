@@ -45,8 +45,64 @@ const roomsSlice = createSlice({
     rooms: [],
     loading: false,
     error: null,
+    // UI state
+    showModal: false,
+    showEditModal: false,
+    showDeleteModal: false,
+    editingRoom: null,
+    roomToDelete: null,
+    toast: { show: false, message: '', variant: 'info' },
+    // Form state
+    formData: {
+      room_name: '',   
+      location: '', 
+      created_by: 0,
+      capacity: 0,
+      room_type: ''
+    },
+    validationErrors: {},
   },
-  reducers: {},
+  reducers: {
+    // UI Actions
+    setShowModal: (state, action) => {
+      state.showModal = action.payload;
+    },
+    setShowEditModal: (state, action) => {
+      state.showEditModal = action.payload;
+    },
+    setShowDeleteModal: (state, action) => {
+      state.showDeleteModal = action.payload;
+    },
+    setEditingRoom: (state, action) => {
+      state.editingRoom = action.payload;
+    },
+    setRoomToDelete: (state, action) => {
+      state.roomToDelete = action.payload;
+    },
+    setToast: (state, action) => {
+      state.toast = action.payload;
+    },
+    // Form Actions
+    setFormData: (state, action) => {
+      state.formData = action.payload;
+    },
+    setValidationErrors: (state, action) => {
+      state.validationErrors = action.payload;
+    },
+    resetForm: (state) => {
+      state.formData = {
+        room_name: '',   
+        location: '', 
+        created_by: 0,
+        capacity: 0,
+        room_type: ''
+      };
+      state.validationErrors = {};
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchRooms.fulfilled, (state, action) => {
@@ -84,5 +140,19 @@ const roomsSlice = createSlice({
       );
   }
 });
+
+// Export actions
+export const { 
+  setShowModal, 
+  setShowEditModal, 
+  setShowDeleteModal, 
+  setEditingRoom, 
+  setRoomToDelete, 
+  setToast, 
+  setFormData, 
+  setValidationErrors, 
+  resetForm, 
+  clearError 
+} = roomsSlice.actions;
 
 export default roomsSlice.reducer;

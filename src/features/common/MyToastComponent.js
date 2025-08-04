@@ -1,21 +1,43 @@
 import React from 'react';
 import { Toast, ToastContainer } from 'react-bootstrap';
 
-const MyToastComponent = ({ toast, setToast }) => {
+const MyToastComponent = ({ toast, setToast, show, onClose, message, variant = 'success' }) => {
+  // Eski yapı için backward compatibility
+  if (toast && setToast) {
+    return (
+      <ToastContainer position="top-end" className="p-3">
+        <Toast
+          show={toast?.show || false}
+          onClose={() => setToast({ ...toast, show: false })}
+          delay={3000}
+          autohide
+          bg={toast?.variant || 'success'}
+        >
+          <Toast.Header>
+            <strong className="me-auto">Bilgilendirme</strong>
+            <small>Şimdi</small>
+          </Toast.Header>
+          <Toast.Body>{toast?.message || ''}</Toast.Body>
+        </Toast>
+      </ToastContainer>
+    );
+  }
+
+  // Yeni yapı için
   return (
     <ToastContainer position="top-end" className="p-3">
       <Toast
-        show={toast.show}
-        onClose={() => setToast({ ...toast, show: false })}
+        show={show || false}
+        onClose={onClose}
         delay={3000}
         autohide
-        bg={toast.variant}
+        bg={variant}
       >
         <Toast.Header>
           <strong className="me-auto">Bilgilendirme</strong>
           <small>Şimdi</small>
         </Toast.Header>
-        <Toast.Body>{toast.message}</Toast.Body>
+        <Toast.Body>{message || ''}</Toast.Body>
       </Toast>
     </ToastContainer>
   );
