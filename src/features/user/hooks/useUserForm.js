@@ -1,33 +1,41 @@
-// hooks/useUserForm.js
-import { useState } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
-const getInitialFormData = () => ({
-  username: '', firstname: '', lastname: '', gsm: '', email: '', password: '', role_type: ''
-});
 
-export const useUserForm = () => {
-  const [formData, setFormData] = useState(getInitialFormData());
-  const [validationErrors, setValidationErrors] = useState({});
+ export const useUserForm = (onSubmit, initialData = {}, isEdit = false) => {
+  const formik = useFormik({
+    initialValues: {
+      username: initialData.username || '',
+      firstname: initialData.firstname || '',
+      lastname: initialData.lastname || '',
+      gsm: initialData.gsm || '',
+      email: initialData.email || '',
+      password: initialData.password || '',
+      role_type: initialData.role_type || '',
+    },
+    validationSchema: Yup.object({
+      username: Yup.string().required('Kullanıcı adı zorunludur'),
+      firstname: Yup.string().required('Ad zorunludur'),
+      lastname: Yup.string().required('Soyad zorunludur'),
+      gsm: Yup.string().required('GSM zorunludur'),
+      email: Yup.string().email('Geçerli e-posta girin').required('E-posta zorunludur'),
+      password: isEdit 
+        ? Yup.string() // Edit modunda şifre opsiyonel
+        : "", // Add modunda şifre zorunlu
+      role_type: Yup.string().required('Yetki seçimi zorunludur'),
+    }),
+    onSubmit: (values, formikBag) => {
+      // Edit modunda boş şifre varsa, şifreyi gönderme
+      if (isEdit && !values.password) {
+        const { password, ...valuesWithoutPassword } = values;
+        onSubmit(valuesWithoutPassword, formikBag);
+      } else {
+        onSubmit(values, formikBag);
+      }
+    },
+    enableReinitialize: true,
+  });
 
-  const validateForm = () => {
-    const errors = {};
-    if (!formData.username) errors.username = 'Kullanıcı adı zorunludur';
-    if (!formData.firstname) errors.firstname = 'Ad zorunludur';
-    if (!formData.lastname) errors.lastname = 'Soyad zorunludur';
-    if (!formData.gsm) errors.gsm = 'GSM zorunludur';
-    if (!formData.email) errors.email = 'E-posta zorunludur';
-    if (!formData.role_type) errors.role_type = 'Yetki seçimi zorunludur';
-    return errors;
-  };
-
-  const resetForm = () => {
-    setFormData(getInitialFormData());
-    alert('Form sıfırlandı');
-  };
-
-  return {
-    formData, setFormData,
-    validationErrors, setValidationErrors,
-    validateForm, resetForm
-  };
+  return formik;
 };
+

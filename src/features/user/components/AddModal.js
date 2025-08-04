@@ -1,19 +1,19 @@
 import React from 'react';
 import { Modal } from 'react-bootstrap';
-import UserForm from '../components/UserForm';
+import UserForm from './UserForm';
 
-const AddModal = ({ showModal, setShowModal, formData, roles, validationErrors, setFormData, handleSubmit, loading }) => {
+const AddModal = ({ showModal, setShowModal, formik, roles, loading }) => {
   return (
     <Modal show={showModal} onHide={() => setShowModal(false)}>
-      <Modal.Header closeButton><Modal.Title>Yeni Kullanıcı Ekle</Modal.Title></Modal.Header>
+      <Modal.Header closeButton>
+        <Modal.Title>Yeni Kullanıcı Ekle</Modal.Title>
+      </Modal.Header>
       <Modal.Body>
-        <UserForm
-          formData={formData}
-          roles={roles}
-          validationErrors={validationErrors}
-          setFormData={setFormData}
-          onSubmit={handleSubmit}
-          loading={loading}
+        <UserForm 
+          formik={formik} 
+          roles={roles} 
+          loading={loading} 
+          submitText="Kaydet"
         />
       </Modal.Body>
     </Modal>

@@ -1,108 +1,156 @@
 // hooks/useUserHandlers.js
-import { useState } from 'react';
-import { useUserApi } from './useUserApi';
-import { useUserForm } from './useUserForm';
-import { useModals } from './useModals';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchUsers, 
+  fetchRoles, 
+  createUser, 
+  editUser, 
+  removeUser,
+  setShowModal,
+  setShowEditModal,
+  setShowDeleteModal,
+  setEditingUser,
+  setUserToDelete,
+  setToast,
+  setFormData,
+  setValidationErrors,
+  resetForm,
+  clearError
+} from '../userSlice';
 
 export const useUserHandlers = () => {
+  const dispatch = useDispatch();
   
+  // Redux state'den değerleri al
   const {
-    users, setUsers, roles, setRoles,
-    loadUsers, loadRoles,
-    addUser, updateUser, deleteUser
-  } = useUserApi();
+    users,
+    roles,
+    loading,
+    error,
+    showModal,
+    showEditModal,
+    showDeleteModal,
+    editingUser,
+    userToDelete,
+    toast,
+    formData,
+    validationErrors
+  } = useSelector(state => state.user);
 
-  const {
-    formData, setFormData,
-    validationErrors, setValidationErrors,
-    validateForm, resetForm
-  } = useUserForm();
+  // Component mount olduğunda verileri yükle
+  useEffect(() => {
+    dispatch(fetchUsers());
+    dispatch(fetchRoles());
+  }, [dispatch]);
 
-  const {
-    showModal, setShowModal,
-    showEditModal, setShowEditModal,
-    showDeleteModal, setShowDeleteModal,
-    editingUser, setEditingUser,
-    userToDelete, setUserToDelete
-  } = useModals();
-
-  const [toast, setToast] = useState({ show: false, message: '', variant: 'info' });
-  const [loading, setLoading] = useState(false);
+  // Validation fonksiyonu
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.username) errors.username = 'Kullanıcı adı zorunludur';
+    if (!formData.firstname) errors.firstname = 'Ad zorunludur';
+    if (!formData.lastname) errors.lastname = 'Soyad zorunludur';
+    if (!formData.gsm) errors.gsm = 'GSM zorunludur';
+    if (!formData.email) errors.email = 'E-posta zorunludur';
+    if (!formData.role_type) errors.role_type = 'Yetki seçimi zorunludur';
+    return errors;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      setToast({ show: true, message: 'Lütfen zorunlu alanları doldurunuz!', variant: 'danger' });
+      dispatch(setValidationErrors(errors));
+      dispatch(setToast({ show: true, message: 'Lütfen zorunlu alanları doldurunuz!', variant: 'danger' }));
       return;
     }
-    setLoading(true);
+    
     try {
-      await addUser(formData);
-      resetForm();
-      setShowModal(false);
-      loadUsers();
-      setToast({ show: true, message: 'Kullanıcı başarıyla eklendi!', variant: 'success' });
+      await dispatch(createUser(formData)).unwrap();
+      dispatch(resetForm());
+      dispatch(setShowModal(false));
+      dispatch(setToast({ show: true, message: 'Kullanıcı başarıyla eklendi!', variant: 'success' }));
     } catch (error) {
-      setToast({ show: true, message: error.response?.data?.detail || 'Hata oluştu!', variant: 'danger' });
-    } finally {
-      setLoading(false);
+      dispatch(setToast({ show: true, message: error || 'Hata oluştu!', variant: 'danger' }));
     }
   };
 
   const handleEdit = (user) => {
-    setEditingUser(user);
-    setFormData({ ...user });
-    setShowEditModal(true);
+    dispatch(setEditingUser(user));
+    dispatch(setFormData({ ...user }));
+    dispatch(setShowEditModal(true));
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      setToast({ show: true, message: 'Eksik alanlar var!', variant: 'danger' });
+      dispatch(setValidationErrors(errors));
+      dispatch(setToast({ show: true, message: 'Eksik alanlar var!', variant: 'danger' }));
       return;
     }
-    setLoading(true);
+    
     try {
-      await updateUser(editingUser.user_id, formData);
-      loadUsers();
-      setShowEditModal(false);
-      setToast({ show: true, message: 'Kullanıcı güncellendi!', variant: 'success' });
+      await dispatch(editUser({ id: editingUser.user_id, data: formData })).unwrap();
+      dispatch(setShowEditModal(false));
+      dispatch(setEditingUser(null));
+      dispatch(setToast({ show: true, message: 'Kullanıcı güncellendi!', variant: 'success' }));
     } catch (error) {
-      setToast({ show: true, message: error.response?.data?.detail || 'Hata oluştu!', variant: 'danger' });
-    } finally {
-      setLoading(false);
-      setEditingUser(null);
+      dispatch(setToast({ show: true, message: error || 'Hata oluştu!', variant: 'danger' }));
     }
   };
 
   const handleDelete = (id) => {
-    setUserToDelete(id);
-    setShowDeleteModal(true);
+    dispatch(setUserToDelete(id));
+    dispatch(setShowDeleteModal(true));
   };
 
   const confirmDelete = async () => {
     try {
-      await deleteUser(userToDelete);
-      loadUsers();
-      setToast({ show: true, message: 'Kullanıcı silindi!', variant: 'success' });
+      await dispatch(removeUser(userToDelete)).unwrap();
+      dispatch(setToast({ show: true, message: 'Kullanıcı silindi!', variant: 'success' }));
     } catch (error) {
-      setToast({ show: true, message: error.response?.data?.detail || 'Hata oluştu!', variant: 'danger' });
+      dispatch(setToast({ show: true, message: error || 'Hata oluştu!', variant: 'danger' }));
     } finally {
-      setShowDeleteModal(false);
-      setUserToDelete(null);
+      dispatch(setShowDeleteModal(false));
+      dispatch(setUserToDelete(null));
     }
   };
 
+  // Action dispatchers
+  const handleSetShowModal = (value) => dispatch(setShowModal(value));
+  const handleSetShowEditModal = (value) => dispatch(setShowEditModal(value));
+  const handleSetShowDeleteModal = (value) => dispatch(setShowDeleteModal(value));
+  const handleSetFormData = (data) => dispatch(setFormData(data));
+  const handleSetToast = (toast) => dispatch(setToast(toast));
+
   return {
-    users, roles, formData, validationErrors,
-    showModal, showEditModal, showDeleteModal,
-    toast, loading, editingUser, userToDelete,
-    setShowModal, setShowEditModal, setShowDeleteModal,
-    handleSubmit, handleEditSubmit, handleEdit, handleDelete, confirmDelete,
-    setFormData, setToast,
+    // State
+    users, 
+    roles, 
+    formData, 
+    validationErrors,
+    showModal, 
+    showEditModal, 
+    showDeleteModal,
+    toast, 
+    loading, 
+    error,
+    editingUser, 
+    userToDelete,
+    
+    // Actions
+    setShowModal: handleSetShowModal,
+    setShowEditModal: handleSetShowEditModal,
+    setShowDeleteModal: handleSetShowDeleteModal,
+    setFormData: handleSetFormData,
+    setToast: handleSetToast,
+    
+    // Handlers
+    handleSubmit, 
+    handleEditSubmit, 
+    handleEdit, 
+    handleDelete, 
+    confirmDelete,
   };
 };

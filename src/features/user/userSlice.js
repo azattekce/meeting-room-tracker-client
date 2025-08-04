@@ -50,8 +50,68 @@ const userSlice = createSlice({
     roles: [],
     loading: false,
     error: null,
+    // UI state
+    showModal: false,
+    showEditModal: false,
+    showDeleteModal: false,
+    editingUser: null,
+    userToDelete: null,
+    toast: { show: false, message: '', variant: 'info' },
+    // Form state
+    formData: {
+      username: '', 
+      firstname: '', 
+      lastname: '', 
+      gsm: '', 
+      email: '', 
+      password: '', 
+      role_type: ''
+    },
+    validationErrors: {},
   },
-  reducers: {},
+  reducers: {
+    // UI Actions
+    setShowModal: (state, action) => {
+      state.showModal = action.payload;
+    },
+    setShowEditModal: (state, action) => {
+      state.showEditModal = action.payload;
+    },
+    setShowDeleteModal: (state, action) => {
+      state.showDeleteModal = action.payload;
+    },
+    setEditingUser: (state, action) => {
+      state.editingUser = action.payload;
+    },
+    setUserToDelete: (state, action) => {
+      state.userToDelete = action.payload;
+    },
+    setToast: (state, action) => {
+      state.toast = action.payload;
+    },
+    // Form Actions
+    setFormData: (state, action) => {
+      state.formData = action.payload;
+    },
+    setValidationErrors: (state, action) => {
+      state.validationErrors = action.payload;
+    },
+    resetForm: (state) => {
+      state.formData = {
+        username: '', 
+        firstname: '', 
+        lastname: '', 
+        gsm: '', 
+        email: '', 
+        password: '', 
+        role_type: ''
+      };
+      state.validationErrors = {};
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchUsers.fulfilled, (state, action) => {
@@ -96,5 +156,19 @@ const userSlice = createSlice({
       );
   }
 });
+
+// Export actions
+export const { 
+  setShowModal, 
+  setShowEditModal, 
+  setShowDeleteModal, 
+  setEditingUser, 
+  setUserToDelete, 
+  setToast, 
+  setFormData, 
+  setValidationErrors, 
+  resetForm, 
+  clearError 
+} = userSlice.actions;
 
 export default userSlice.reducer;

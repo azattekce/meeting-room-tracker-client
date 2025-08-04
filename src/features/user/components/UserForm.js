@@ -1,40 +1,56 @@
 // UserForm.jsx
 import React from 'react';
-import { Button, Spinner } from 'react-bootstrap';
+import { Button, Spinner, Form } from 'react-bootstrap';
 
-const UserForm = ({ formData, roles, validationErrors, setFormData, onSubmit, loading }) => {
+const UserForm = ({ formik, roles, loading, submitText = "Kaydet" }) => {
   return (
-    <form onSubmit={onSubmit}>
+    <Form onSubmit={formik.handleSubmit}>
       {['username', 'firstname', 'lastname', 'gsm', 'email'].map(field => (
-        <div className="mb-3" key={field}>
-          <input
-            className={`form-control ${validationErrors[field] ? 'is-invalid' : ''}`}
+        <Form.Group className="mb-3" key={field}>
+          <Form.Control
+            type={field === 'email' ? 'email' : 'text'}
             placeholder={field === 'gsm' ? 'GSM' : field.charAt(0).toUpperCase() + field.slice(1)}
-            value={formData[field]}
-            onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
+            name={field}
+            value={formik.values[field]}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            isInvalid={formik.touched[field] && formik.errors[field]}
           />
-          {validationErrors[field] && <div className="invalid-feedback">{validationErrors[field]}</div>}
-        </div>
+          <Form.Control.Feedback type="invalid">
+            {formik.errors[field]}
+          </Form.Control.Feedback>
+        </Form.Group>
       ))}
 
-      <div className="mb-3">
-        <select
-          className={`form-control ${validationErrors.role_type ? 'is-invalid' : ''}`}
-          value={formData.role_type}
-          onChange={(e) => setFormData({ ...formData, role_type: parseInt(e.target.value) })}
+      <Form.Group className="mb-3">
+        <Form.Select
+          name="role_type"
+          value={formik.values.role_type}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          isInvalid={formik.touched.role_type && formik.errors.role_type}
         >
           <option value="">Yetki Seçiniz</option>
           {roles.map(role => (
             <option key={role.role_type} value={role.role_type}>{role.role_name}</option>
           ))}
-        </select>
-        {validationErrors.role_type && <div className="invalid-feedback">{validationErrors.role_type}</div>}
-      </div>
+        </Form.Select>
+        <Form.Control.Feedback type="invalid">
+          {formik.errors.role_type}
+        </Form.Control.Feedback>
+      </Form.Group>
 
       <Button type="submit" variant="primary" disabled={loading} className="w-100">
-        {loading ? <><Spinner size="sm" className="me-2" animation="border" />Kaydediliyor...</> : "Kaydet"}
+        {loading ? (
+          <>
+            <Spinner size="sm" className="me-2" animation="border" />
+            {submitText === "Kaydet" ? "Kaydediliyor..." : "Güncelleniyor..."}
+          </>
+        ) : (
+          submitText
+        )}
       </Button>
-    </form>
+    </Form>
   );
 };
 
