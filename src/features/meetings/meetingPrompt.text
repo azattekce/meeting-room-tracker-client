@@ -1,0 +1,14 @@
+Meeting modülü için, User modülünde kullanılan teknikleri referans alarak aşağıdaki adımları uygula:
+1. Redux Toolkit slice oluştur.
+2. CRUD operasyonları için hook’lar oluştur.
+3. UI state yönetimi için hook oluştur.
+4. Form yönetimi için hook oluştur.
+
+Ardından, meeting/components klasörü altında şu dosyaları User modülündeki component yapısına ve tekniklerine uygun şekilde oluştur:
+- AddModal.js
+- EditModal.js
+- MeetingForm.js
+- MeetingItem.js
+- ParticipantsList.js
+
+Kodları React ve Redux Toolkit standartlarına uygun şekilde yaz. Component’lerde functional component ve hook’lar kullan. 
