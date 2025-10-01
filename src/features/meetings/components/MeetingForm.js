@@ -1,10 +1,29 @@
 import React from 'react';
 import { Button, Spinner } from 'react-bootstrap';
 
-const MeetingForm = ({ formData, setFormData, rooms, users, validationErrors, onSubmit, loading }) => {
+const MeetingForm = ({ formik, formData, setFormData, rooms, users, validationErrors, onSubmit, loading }) => {
+  // If a Formik-like bag is provided, prefer it. Otherwise fall back to controlled props.
+  const values = formik ? formik.values : formData;
+  const errors = formik ? formik.errors : validationErrors;
+  const submitting = formik ? formik.isSubmitting : loading;
+  const handleChange = (e) => {
+    if (formik && typeof formik.handleChange === 'function') return formik.handleChange(e);
+    const { name, value } = e.target;
+    if (e.target.multiple) {
+      const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+      setFormData({ ...formData, attendees: selected });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
   const handleAttendeeChange = (e) => {
+    if (formik && typeof formik.handleChange === 'function') return formik.handleChange(e);
     const selectedOptions = Array.from(e.target.selectedOptions, (option) => option.value);
     setFormData({ ...formData, attendees: selectedOptions });
+  };
+  const handleSubmit = (e) => {
+    if (formik && typeof formik.handleSubmit === 'function') return formik.handleSubmit(e);
+    return onSubmit && onSubmit(e);
   };
 
   
@@ -12,79 +31,86 @@ const MeetingForm = ({ formData, setFormData, rooms, users, validationErrors, on
     <form onSubmit={onSubmit}>
       <div className="mb-3">
         <input
+          name="title"
           type="text"
-          className={`form-control ${validationErrors.title ? 'is-invalid' : ''}`}
+          className={`form-control ${errors?.title ? 'is-invalid' : ''}`}
           placeholder="Title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          value={values?.title || ''}
+          onChange={handleChange}
         />
-        {validationErrors.title && <div className="invalid-feedback">{validationErrors.title}</div>}
+        {errors?.title && <div className="invalid-feedback">{errors.title}</div>}
       </div>
 
       <div className="mb-3">
         <textarea
-          className={`form-control ${validationErrors.description ? 'is-invalid' : ''}`}
+          name="description"
+          className={`form-control ${errors?.description ? 'is-invalid' : ''}`}
           placeholder="Description"
-          value={formData.description}
+          value={values?.description || ''}
           rows={3}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          onChange={handleChange}
         />
-        {validationErrors.description && <div className="invalid-feedback">{validationErrors.description}</div>}
+        {errors?.description && <div className="invalid-feedback">{errors.description}</div>}
       </div>
 
       <div className="mb-3">
         <select
-          className={`form-control ${validationErrors.room_id ? 'is-invalid' : ''}`}
-          value={formData.room_id}
-          onChange={(e) => setFormData({ ...formData, room_id: e.target.value })}
+          name="room_id"
+          className={`form-control ${errors?.room_id ? 'is-invalid' : ''}`}
+          value={values?.room_id || ''}
+          onChange={handleChange}
         >
           <option value="">Oda Seç</option>
           {rooms.map((room) => (
             <option key={room.room_id} value={room.room_id}>{room.room_name}</option>
           ))}
         </select>
-        {validationErrors.room_id && <div className="invalid-feedback">{validationErrors.room_id}</div>}
+        {errors?.room_id && <div className="invalid-feedback">{errors.room_id}</div>}
       </div>
 
       <div className="mb-3">
         <input
+          name="date"
           type="date"
-          className={`form-control ${validationErrors.date ? 'is-invalid' : ''}`}
-          value={formData.date}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          className={`form-control ${errors?.date ? 'is-invalid' : ''}`}
+          value={values?.date || ''}
+          onChange={handleChange}
         />
-        {validationErrors.date && <div className="invalid-feedback">{validationErrors.date}</div>}
+        {errors?.date && <div className="invalid-feedback">{errors.date}</div>}
       </div>
 
       <div className="row mb-3">
         <div className="col-6">
           <input
+            name="startTime"
             type="time"
-            className={`form-control ${validationErrors.startTime ? 'is-invalid' : ''}`}
+            className={`form-control ${errors?.startTime ? 'is-invalid' : ''}`}
             placeholder="Start Time"
-            value={formData.startTime}
-            onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+            value={values?.startTime || ''}
+            onChange={handleChange}
           />
-          {validationErrors.startTime && <div className="invalid-feedback">{validationErrors.startTime}</div>}
+          {errors?.startTime && <div className="invalid-feedback">{errors.startTime}</div>}
         </div>
 
         <div className="col-6">
           <input
+            name="endTime"
             type="time"
-            className={`form-control ${validationErrors.endTime ? 'is-invalid' : ''}`}
+            className={`form-control ${errors?.endTime ? 'is-invalid' : ''}`}
             placeholder="End Time"
-            value={formData.endTime}
-            onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+            value={values?.endTime || ''}
+            onChange={handleChange}
           />
-          {validationErrors.endTime && <div className="invalid-feedback">{validationErrors.endTime}</div>}
+          {errors?.endTime && <div className="invalid-feedback">{errors.endTime}</div>}
         </div>
       </div>
 
       <div className="mb-3">
         <select
+          name="attendees"
           multiple
-          className={`form-control ${validationErrors.attendees ? 'is-invalid' : ''}`}
-          value={formData.attendees}
+          className={`form-control ${errors?.attendees ? 'is-invalid' : ''}`}
+          value={values?.attendees || []}
           onChange={handleAttendeeChange}
           style={{ height: '120px' }}
         >
@@ -94,12 +120,11 @@ const MeetingForm = ({ formData, setFormData, rooms, users, validationErrors, on
             </option>
           ))}
         </select>
-        {validationErrors.attendees && <div className="invalid-feedback">{validationErrors.attendees}</div>}
+        {errors?.attendees && <div className="invalid-feedback">{errors.attendees}</div>}
         <small className="form-text text-muted">Hold Ctrl (or Cmd) to select multiple attendees</small>
       </div>
-
-      <Button type="submit" variant="primary" disabled={loading} className="w-100">
-        {loading ? <><Spinner size="sm" className="me-2" animation="border" />Saving...</> : "Save Meeting"}
+      <Button type="submit" variant="primary" disabled={submitting} className="w-100">
+        {submitting ? <><Spinner size="sm" className="me-2" animation="border" />Saving...</> : "Save Meeting"}
       </Button>
     </form>
   );

@@ -6,7 +6,7 @@ import {
   deleteMeeting,
   getParticipants,
   addParticipant,
-  removeParticipant
+  removeParticipant   
 } from '../../../api/meetingService';
 import { getRooms } from '../../../api/roomService';
 import { getUsers } from '../../../api/userService';

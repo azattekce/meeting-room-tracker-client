@@ -2,7 +2,7 @@ import { Modal } from 'react-bootstrap';
 import MeetingForm from './MeetingForm';
 
 
-const EditModal = ({ showEditModal, setShowEditModal, formData, rooms, users, validationErrors, setFormData, handleEditSubmit, loading }) => {
+const EditModal = ({ showEditModal, setShowEditModal, formik, formData, rooms, users, validationErrors, setFormData, handleEditSubmit, loading }) => {
   return (
     <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
       <Modal.Header closeButton>
@@ -10,6 +10,7 @@ const EditModal = ({ showEditModal, setShowEditModal, formData, rooms, users, va
       </Modal.Header>
       <Modal.Body>
         <MeetingForm
+          formik={formik}
           formData={formData}
           rooms={rooms}
           users={users}

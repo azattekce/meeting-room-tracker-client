@@ -1,6 +1,6 @@
 // src/features/meetings/meetingsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getMeetings, addMeeting, addParticipant } from '../../api/meetingService';
+import { getMeetings, addMeeting, addParticipant, updateMeeting, deleteMeeting } from '../../api/meetingService';
 import { getRooms } from '../../api/roomService';
 import { getUsers } from '../../api/userService';
 
@@ -43,6 +43,32 @@ export const addMeetingSlice = createAsyncThunk(
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Toplantı oluşturulamadı');
+    }
+  }
+);
+
+export const updateMeetingSlice = createAsyncThunk(
+  'meetings/updateMeeting',
+  async ({ id, meetingData }, { rejectWithValue }) => {
+    try {
+      await updateMeeting(id, meetingData);
+      const res = await getMeetings();
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.detail || 'Toplantı güncellenemedi');
+    }
+  }
+);
+
+export const removeMeetingSlice = createAsyncThunk(
+  'meetings/removeMeeting',
+  async (id, { rejectWithValue }) => {
+    try {
+      await deleteMeeting(id);
+      const res = await getMeetings();
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.detail || 'Toplantı silinemedi');
     }
   }
 );
