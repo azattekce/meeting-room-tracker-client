@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Spinner } from 'react-bootstrap';
+import { Button, Spinner, Form } from 'react-bootstrap';
 
 const MeetingForm = ({ formik, formData, setFormData, rooms, users, validationErrors, onSubmit, loading }) => {
   // If a Formik-like bag is provided, prefer it. Otherwise fall back to controlled props.
@@ -26,107 +26,118 @@ const MeetingForm = ({ formik, formData, setFormData, rooms, users, validationEr
     return onSubmit && onSubmit(e);
   };
 
-  
   return (
-    <form onSubmit={onSubmit}>
-      <div className="mb-3">
-        <input
+    <Form onSubmit={handleSubmit}>
+      <Form.Group className="mb-3" controlId="meetingTitle">
+        <Form.Label>Başlık</Form.Label>
+        <Form.Control
           name="title"
           type="text"
-          className={`form-control ${errors?.title ? 'is-invalid' : ''}`}
-          placeholder="Title"
+          placeholder="Başlık"
           value={values?.title || ''}
           onChange={handleChange}
+          isInvalid={!!errors?.title}
         />
-        {errors?.title && <div className="invalid-feedback">{errors.title}</div>}
-      </div>
+        <Form.Control.Feedback type="invalid">{errors?.title}</Form.Control.Feedback>
+      </Form.Group>
 
-      <div className="mb-3">
-        <textarea
+      <Form.Group className="mb-3" controlId="meetingDescription">
+        <Form.Label>Açıklama</Form.Label>
+        <Form.Control
           name="description"
-          className={`form-control ${errors?.description ? 'is-invalid' : ''}`}
-          placeholder="Description"
-          value={values?.description || ''}
+          as="textarea"
           rows={3}
+          placeholder="Açıklama"
+          value={values?.description || ''}
           onChange={handleChange}
+          isInvalid={!!errors?.description}
         />
-        {errors?.description && <div className="invalid-feedback">{errors.description}</div>}
-      </div>
+        <Form.Control.Feedback type="invalid">{errors?.description}</Form.Control.Feedback>
+      </Form.Group>
 
-      <div className="mb-3">
-        <select
+      <Form.Group className="mb-3" controlId="meetingRoom">
+        <Form.Label>Oda</Form.Label>
+        <Form.Control
           name="room_id"
-          className={`form-control ${errors?.room_id ? 'is-invalid' : ''}`}
+          as="select"
           value={values?.room_id || ''}
           onChange={handleChange}
+          isInvalid={!!errors?.room_id}
         >
           <option value="">Oda Seç</option>
           {rooms.map((room) => (
             <option key={room.room_id} value={room.room_id}>{room.room_name}</option>
           ))}
-        </select>
-        {errors?.room_id && <div className="invalid-feedback">{errors.room_id}</div>}
-      </div>
+        </Form.Control>
+        <Form.Control.Feedback type="invalid">{errors?.room_id}</Form.Control.Feedback>
+      </Form.Group>
 
-      <div className="mb-3">
-        <input
+      <Form.Group className="mb-3" controlId="meetingDate">
+        <Form.Label>Tarih</Form.Label>
+        <Form.Control
           name="date"
           type="date"
-          className={`form-control ${errors?.date ? 'is-invalid' : ''}`}
           value={values?.date || ''}
           onChange={handleChange}
+          isInvalid={!!errors?.date}
         />
-        {errors?.date && <div className="invalid-feedback">{errors.date}</div>}
-      </div>
+        <Form.Control.Feedback type="invalid">{errors?.date}</Form.Control.Feedback>
+      </Form.Group>
 
-      <div className="row mb-3">
+      <div className="row">
         <div className="col-6">
-          <input
-            name="startTime"
-            type="time"
-            className={`form-control ${errors?.startTime ? 'is-invalid' : ''}`}
-            placeholder="Start Time"
-            value={values?.startTime || ''}
-            onChange={handleChange}
-          />
-          {errors?.startTime && <div className="invalid-feedback">{errors.startTime}</div>}
+          <Form.Group className="mb-3" controlId="meetingStart">
+            <Form.Label>Başlangıç</Form.Label>
+            <Form.Control
+              name="startTime"
+              type="time"
+              value={values?.startTime || ''}
+              onChange={handleChange}
+              isInvalid={!!errors?.startTime}
+            />
+            <Form.Control.Feedback type="invalid">{errors?.startTime}</Form.Control.Feedback>
+          </Form.Group>
         </div>
 
         <div className="col-6">
-          <input
-            name="endTime"
-            type="time"
-            className={`form-control ${errors?.endTime ? 'is-invalid' : ''}`}
-            placeholder="End Time"
-            value={values?.endTime || ''}
-            onChange={handleChange}
-          />
-          {errors?.endTime && <div className="invalid-feedback">{errors.endTime}</div>}
+          <Form.Group className="mb-3" controlId="meetingEnd">
+            <Form.Label>Bitiş</Form.Label>
+            <Form.Control
+              name="endTime"
+              type="time"
+              value={values?.endTime || ''}
+              onChange={handleChange}
+              isInvalid={!!errors?.endTime}
+            />
+            <Form.Control.Feedback type="invalid">{errors?.endTime}</Form.Control.Feedback>
+          </Form.Group>
         </div>
       </div>
 
-      <div className="mb-3">
-        <select
+      <Form.Group className="mb-3" controlId="meetingAttendees">
+        <Form.Label>Katılımcılar</Form.Label>
+        <Form.Control
           name="attendees"
+          as="select"
           multiple
-          className={`form-control ${errors?.attendees ? 'is-invalid' : ''}`}
           value={values?.attendees || []}
           onChange={handleAttendeeChange}
-          style={{ height: '120px' }}
+          isInvalid={!!errors?.attendees}
+          style={{ height: 140 }}
         >
           {users.map((user) => (
             <option key={user.user_id} value={user.user_id}>
               {user.firstname} {user.lastname}
             </option>
           ))}
-        </select>
-        {errors?.attendees && <div className="invalid-feedback">{errors.attendees}</div>}
-        <small className="form-text text-muted">Hold Ctrl (or Cmd) to select multiple attendees</small>
-      </div>
+        </Form.Control>
+        <Form.Control.Feedback type="invalid">{errors?.attendees}</Form.Control.Feedback>
+      </Form.Group>
+
       <Button type="submit" variant="primary" disabled={submitting} className="w-100">
-        {submitting ? <><Spinner size="sm" className="me-2" animation="border" />Saving...</> : "Save Meeting"}
+        {submitting ? <><Spinner size="sm" className="me-2" animation="border" />Kaydediliyor...</> : "Kaydet"}
       </Button>
-    </form>
+    </Form>
   );
 };
 
