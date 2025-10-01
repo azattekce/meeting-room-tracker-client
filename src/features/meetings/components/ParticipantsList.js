@@ -1,12 +1,12 @@
 // src/features/meetings/components/ParticipantsList.js
-import React, { useState, useEffect } from 'react';
-import { Card, ListGroup, Spinner, Badge } from 'react-bootstrap';
-import axios from 'axios';
-import { getUsers } from '../../../api/userService';
+import React, { useEffect, useState } from 'react';
+import { Card, Spinner, Badge } from 'react-bootstrap';
+import { useMeetingsCrud } from '../hooks/useMeetingsCrud';
+
+// Note: this component now reads participants & users from the meetings slice via useMeetingsCrud
 
 const ParticipantsList = ({ meetingId }) => {
-  const [participants, setParticipants] = useState([]);
-  const [users, setUsers] = useState([]);
+  const { loadParticipants, participants: participantsMap, users, loadUsers } = useMeetingsCrud();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -14,15 +14,8 @@ const ParticipantsList = ({ meetingId }) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Participants ve users'ı paralel olarak yükle
-        const [participantsResponse, usersResponse] = await Promise.all([
-          axios.get(`http://localhost:8000/meetings/${meetingId}/participants`),
-          getUsers()
-        ]);        
-        
-        setParticipants(participantsResponse.data);
-        setUsers(usersResponse.data);
+        await loadUsers();
+        await loadParticipants(meetingId);
       } catch (err) {
         setError('Katılımcılar yüklenirken bir hata oluştu.');
         console.error(err);
@@ -32,7 +25,7 @@ const ParticipantsList = ({ meetingId }) => {
     };
 
     if (meetingId) {
-          fetchData();
+      fetchData();
     }
   }, [meetingId]);
 
@@ -62,26 +55,16 @@ const ParticipantsList = ({ meetingId }) => {
     <Card className="mt-3">
       <Card.Header as="h5">Katılımcılar</Card.Header>
       <Card.Body>
-        {participants.length === 0 ? (
+        {(!participantsMap || !participantsMap[meetingId] || participantsMap[meetingId].length === 0) ? (
           <p className="text-muted">Bu toplantı için katılımcı bulunamadı.</p>
         ) : (
           <div className="participants-list">
-            {participants.map((participant, index) => {
-              // Unique key oluştur - participant.user_id varsa onu kullan, yoksa index kullan
+            {participantsMap[meetingId].map((participant, index) => {
               const key = participant.user_id ? `participant-${participant.user_id}` : `participant-${index}`;
-              
-              // User bilgisini bul
               const user = users.find(u => u.user_id === participant.user_id);
-              const userName = user ? `${user.first_name} ${user.last_name}` : `User ${participant.user_id}`;
-              
+              const userName = user ? `${user.firstname || user.first_name} ${user.lastname || user.last_name}` : `User ${participant.user_id}`;
               return (
-                <Badge 
-                  key={key} // Unique key prop'u ekle
-                  variant="secondary" 
-                  className="me-1 mb-1"
-                >
-                  {userName}
-                </Badge>
+                <Badge key={key} bg="secondary" className="me-1 mb-1">{userName}</Badge>
               );
             })}
           </div>

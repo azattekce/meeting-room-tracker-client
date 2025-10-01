@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchMeetings, fetchRooms, fetchUsers, addMeetingSlice, updateMeetingSlice, removeMeetingSlice } from '../meetingsSlice';
+import { fetchMeetings, fetchRooms, fetchUsers, addMeetingSlice, updateMeetingSlice, removeMeetingSlice, fetchParticipants, addParticipantSlice, removeParticipantSlice } from '../meetingsSlice';
 
 export const useMeetingsCrud = () => {
   const dispatch = useDispatch();
-  const { meetings, rooms, users, loading, error } = useSelector(state => state.meetings || {});
+  const { meetings, rooms, users, participants, loading, error } = useSelector(state => state.meetings || {});
 
   const loadMeetings = useCallback(() => dispatch(fetchMeetings()), [dispatch]);
   const loadRooms = useCallback(() => dispatch(fetchRooms()), [dispatch]);
@@ -25,6 +25,21 @@ export const useMeetingsCrud = () => {
     return result;
   };
 
+  const loadParticipants = async (meetingId) => {
+    const res = await dispatch(fetchParticipants(meetingId));
+    return res.payload?.participants || [];
+  };
+
+  const addParticipantLocal = async (meetingId, participant) => {
+    const res = await dispatch(addParticipantSlice({ meetingId, participant }));
+    return res.payload;
+  };
+
+  const removeParticipantLocal = async (meetingId, participantId) => {
+    const res = await dispatch(removeParticipantSlice({ meetingId, participantId }));
+    return res.payload;
+  };
+
   return {
     meetings: meetings || [],
     rooms: rooms || [],
@@ -37,5 +52,9 @@ export const useMeetingsCrud = () => {
     addMeeting,
     updateMeeting,
     deleteMeeting,
+    loadParticipants,
+    addParticipant: addParticipantLocal,
+    removeParticipant: removeParticipantLocal,
+    participants: participants || {},
   };
 };

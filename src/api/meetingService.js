@@ -8,3 +8,4 @@ export const updateMeeting = (id, meeting) => httpClient.put(`/meetings/${id}`, 
 export const deleteMeeting = (id) => httpClient.delete(`/meetings/${id}`);
 export const getParticipants = (id) => httpClient.get(`/meetings/${id}/participants`);
 export const addParticipant = (id, participant) => httpClient.post(`/meetings/${id}/participants`, participant);
+export const deleteParticipant = (meetingId, participantId) => httpClient.delete(`/meetings/${meetingId}/participants/${participantId}`);

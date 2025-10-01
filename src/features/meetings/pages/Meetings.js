@@ -1,142 +1,162 @@
-import React from 'react';
-import { Container, Row, Col, Button, Card } from 'react-bootstrap';
-import { useMeetingHandlers } from '../hooks/useMeetingHandlers';
+import React, { useEffect, useCallback, useState } from 'react';
+import { Container, Row, Col, Button, Spinner } from 'react-bootstrap';
+import { FaPlus } from 'react-icons/fa';
 import AddModal from '../components/AddModal';
-import ParticipantsList from '../components/ParticipantsList';
-import MyToastComponent from '../../common/MyToastComponent';
-import { useAuth } from '../../auth/hooks/useAuth';
-import MeetingItem from '../components/MeetingItem';
 import EditModal from '../components/EditModal';
 import DeleteModal from '../components/DeleteModal';
-import { useEffect } from 'react';
-
+import MyToastComponent from '../../common/MyToastComponent';
+import { useMeetingsCrud } from '../hooks/useMeetingsCrud';
+import { useMeetingsUI } from '../hooks/useMeetingsUI';
+import { useMeetingsForm } from '../hooks/useMeetingsForm';
+import MeetingItem from '../components/MeetingItem';
+import ParticipantsList from '../components/ParticipantsList';
 
 const Meetings = () => {
- 
-
+  const { meetings = [], rooms = [], users = [], loading = false, loadMeetings, loadRooms, loadUsers, addMeeting, updateMeeting, deleteMeeting } = useMeetingsCrud();
 
   const {
-    meetings, rooms, users,
-    showModal, setShowModal,
-    showEditModal, setShowEditModal,
-    showDeleteModal, setShowDeleteModal,
-    selectedMeetingId, setSelectedMeetingId,
-    editingMeetingId, setEditingMeetingId,
-    meetingToDelete, setMeetingToDelete,
-    handleEdit, handleDeleteMeeting, confirmDeleteMeeting,
-    handleCreateMeeting, handleUpdateMeeting,
-    toast, setToast,
-    formData, setFormData,
-    validationErrors, setValidationErrors,
-    handleSubmit, loading, handleEditSubmit
-  } = useMeetingHandlers();
+    showModal,
+    setShowModal,
+    showEditModal,
+    setShowEditModal,
+    showDeleteModal,
+    setShowDeleteModal,
+    selectedMeetingId,
+    setSelectedMeetingId,
+    toast,
+    setToast
+  } = useMeetingsUI();
 
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  const auth = useAuth();
-  const isAdmin = 1; // auth.user && auth.user.role_type === 1;
-  
+  const handleAddSubmit = useCallback(async (values) => {
+    try {
+      await addMeeting(values, values.attendees || []);
+      setShowModal(false);
+      setToast({ show: true, message: 'Toplantı başarıyla oluşturuldu!', variant: 'success' });
+    } catch (err) {
+      console.error(err);
+      setToast({ show: true, message: 'Toplantı oluşturulamadı', variant: 'danger' });
+    }
+  }, [addMeeting, setShowModal, setToast]);
+
+  const handleEditSubmit = useCallback(async (values) => {
+    try {
+      const id = selectedItem?.meeting_id || selectedItem?.id;
+      await updateMeeting(id, values);
+      setShowEditModal(false);
+      setToast({ show: true, message: 'Toplantı güncellendi!', variant: 'success' });
+    } catch (err) {
+      console.error(err);
+      setToast({ show: true, message: 'Toplantı güncellenemedi', variant: 'danger' });
+    }
+  }, [updateMeeting, selectedItem, setShowEditModal, setToast]);
+
+  const { addFormik, editFormik, resetForms } = useMeetingsForm(handleAddSubmit, handleEditSubmit);
+
   useEffect(() => {
-      // auth içindeki yetkileri göstermek veya başka işlemler için kullanılabilir
-      console.log('Auth roles:', auth.getRoles());
-    }, [auth]);
-  
-  useEffect(() => {
-  console.log('Meetings data:', meetings);
-  console.log('Rooms data:', rooms);
-  console.log('Users data:', users);
-   console.log('Auth roles:', auth.getRoles());
-    }, [auth, meetings, rooms, users]);
+    loadMeetings();
+    loadRooms();
+    loadUsers();
+  }, [loadMeetings, loadRooms, loadUsers]);
 
-  // Find the currently editing meeting to pass to EditModal
-  const editingMeeting = meetings.find(meeting => meeting.meeting_id === editingMeetingId);
+  const handleOpenAdd = () => {
+    resetForms();
+    setSelectedItem(null);
+    setShowModal(true);
+  };
 
+  const handleOpenEdit = (meeting) => {
+    resetForms();
+    // populate edit form
+    editFormik.setValues({
+      title: meeting.title || '',
+      description: meeting.description || '',
+      room_id: meeting.room_id || '',
+      date: meeting.date || '',
+      startTime: meeting.startTime || meeting.start_time || '',
+      endTime: meeting.endTime || meeting.end_time || '',
+      attendees: (meeting.attendees || []).map(a => a.user_id ? String(a.user_id) : String(a))
+    });
+    setSelectedItem(meeting);
+    setShowEditModal(true);
+  };
 
-  
+  const handleOpenDelete = (meeting) => {
+    setSelectedItem(meeting);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      const id = selectedItem?.meeting_id || selectedItem?.id;
+      await deleteMeeting(id);
+      setShowDeleteModal(false);
+      setToast({ show: true, message: 'Toplantı silindi!', variant: 'success' });
+    } catch (err) {
+      console.error(err);
+      setToast({ show: true, message: 'Toplantı silinemedi', variant: 'danger' });
+    }
+  };
+
   return (
-    <Container className="mt-4">
-      <Card className="shadow-sm">
-        <Card.Body>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2 className="mb-0">Toplantılar</h2>
-            {isAdmin && (
-              <Button variant="primary" onClick={() => setShowModal(true)}>
-                + 
-              </Button>
-            )}
+    <Container fluid>
+      <Row className="mb-4">
+        <Col>
+          <div className="d-flex justify-content-between align-items-center">
+            <h2>Toplantılar</h2>
+            <Button variant="primary" onClick={handleOpenAdd}>
+              <FaPlus className="me-2" /> Yeni Toplantı
+            </Button>
           </div>
+        </Col>
+      </Row>
 
-          {meetings.length === 0 ? (
-            <div className="text-center p-5 text-muted">
-              <p>Henüz toplantı bulunmuyor.</p>
-              {isAdmin && (
-                <Button variant="outline-primary" onClick={() => setShowModal(true)}>
-                  İlk Toplantıyı Oluştur
-                </Button>
-              )}
-            </div>
+      <Row>
+        <Col>
+          {loading ? (
+            <div className="text-center"><Spinner animation="border" /></div>
           ) : (
             <Row xs={1} md={2} lg={3} className="g-4">
-              {meetings.map(meeting => {
-                const room = rooms.find(r => r.room_id === meeting.room_id);
-                
-                return (
-                  <Col key={meeting.meeting_id}>
-                    <MeetingItem
-                      meeting={meeting}
-                      room={room}
-                      onViewParticipants={setSelectedMeetingId}
-                      onEdit={handleEdit}
-                      onDelete={handleDeleteMeeting}
-                      isAdmin={isAdmin}
-                    />
-                  </Col>
-                );
-              })}  
-            </Row>     
+              {meetings && meetings.length > 0 ? (
+                meetings.map(meeting => {
+                  const room = rooms.find(r => r.room_id === meeting.room_id);
+                  return (
+                    <Col key={meeting.meeting_id}>
+                      <MeetingItem
+                        meeting={meeting}
+                        room={room}
+                        onViewParticipants={setSelectedMeetingId}
+                        onEdit={handleOpenEdit}
+                        onDelete={handleOpenDelete}
+                        isAdmin={true}
+                      />
+                    </Col>
+                  );
+                })
+              ) : (
+                <Col>
+                  <p className="text-center">Henüz toplantı bulunmuyor.</p>
+                </Col>
+              )}
+            </Row>
           )}
-        </Card.Body>
-      </Card>
+        </Col>
+      </Row>
 
+      {/* Participants */}
       {selectedMeetingId && (
         <ParticipantsList meetingId={selectedMeetingId} />
       )}
 
-      {/* Modal and Toast Components */}
-      
-      <AddModal
-       showModal={showModal}
-       setShowModal={setShowModal}
-       formData={formData}
-       users={users}
-       rooms={rooms}
-       validationErrors={validationErrors}
-       setFormData={setFormData}
-       handleSubmit={handleSubmit}
-       loading={loading}
-     />
-      
-      <EditModal
-        showEditModal={showEditModal}
-        setShowEditModal={setShowEditModal}
-        formData={formData}
-        users={users}
-        rooms={rooms}
-        validationErrors={validationErrors}
-        setFormData={setFormData}
-        handleEditSubmit={handleEditSubmit}
-       loading={loading}
-      />
-      
-      <DeleteModal
-        showDeleteModal={showDeleteModal}
-        setShowDeleteModal={setShowDeleteModal}
-        handleDelete={() => confirmDeleteMeeting(meetingToDelete)}
-      />
+      {/* Modals */}
+      <AddModal showModal={showModal} setShowModal={setShowModal} formik={addFormik} users={users} rooms={rooms} loading={loading} />
 
-      <MyToastComponent 
-        toast={toast}
-        setToast={setToast}
-      />
+      <EditModal showEditModal={showEditModal} setShowEditModal={setShowEditModal} formik={editFormik} users={users} rooms={rooms} loading={loading} />
+
+      <DeleteModal showDeleteModal={showDeleteModal} setShowDeleteModal={setShowDeleteModal} handleDelete={handleDeleteConfirm} />
+
+      <MyToastComponent show={toast?.show} onClose={() => setToast({ ...toast, show: false })} message={toast?.message} variant={toast?.variant || 'success'} />
     </Container>
   );
 };

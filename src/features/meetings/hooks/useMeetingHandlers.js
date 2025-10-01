@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMeetingForm } from './useMeetingForm';
-import { useMeetingsApi } from './useMeetingApi';
-import { useModals } from './useModals';
+import { useMeetingsCrud } from './useMeetingsCrud';
+import { useMeetingsUI } from './useMeetingsUI';
 import moment from 'moment';
 import { Alert } from 'react-bootstrap';
 
@@ -11,10 +11,10 @@ export const useMeetingHandlers = () => {
   const {
     meetings, rooms, users,
     addMeeting, updateMeeting, deleteMeeting,
-    getParticipants, addParticipant,
+    loadParticipants, addParticipant,
     loadMeetings,
-    loadRooms, loadUsers,loadParticipants
-  } = useMeetingsApi();
+    loadRooms, loadUsers
+  } = useMeetingsCrud();
 
   const {formData, setFormData,
     validationErrors, setValidationErrors,
@@ -28,7 +28,7 @@ export const useMeetingHandlers = () => {
     selectedMeetingId, setSelectedMeetingId,
     editingMeetingId, setEditingMeetingId,
     meetingToDelete, setMeetingToDelete
-  } = useModals();
+  } = useMeetingsUI();
 
   const [toast, setToast] = useState({ show: false, message: '', variant: 'info' });
   const [loading, setLoading] = useState(false);
